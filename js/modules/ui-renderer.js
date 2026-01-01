@@ -1108,18 +1108,19 @@ export class UIRenderer {
         // Create export buttons
         const exportButtons = this.modalManager.createExportButtons('exportTaskExcel', 'exportTaskPDF');
         
+        // Update modal title
+        const modalTitle = document.getElementById('taskModalTitle');
+        if (modalTitle) {
+            modalTitle.textContent = task.name;
+        }
+
         // Combine content
         const content = `
             <div style="margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <div>
-                        <h3 style="margin: 0 0 8px 0; color: var(--fibi-blue-primary);">${this.escapeHtml(task.name)}</h3>
-                        <div style="display: flex; gap: 20px; font-size: 14px; color: var(--fibi-gray-600);">
-                            <span>סה"כ שעות: <strong>${this.formatNumber(task.totalHours)}</strong></span>
-                            <span>מספר עובדים: <strong>${task.employees.length}</strong></span>
-                            <span class="task-card-type ${task.type === 'השקעה' ? 'investment' : 'expense'}">${task.type}</span>
-                        </div>
-                    </div>
+                <div style="display: flex; gap: 20px; font-size: 14px; color: var(--fibi-gray-600); padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                    <span>סה"כ שעות: <strong style="color: var(--fibi-blue-primary);">${this.formatNumber(task.totalHours)}</strong></span>
+                    <span>מספר עובדים: <strong style="color: var(--fibi-blue-primary);">${task.employees.length}</strong></span>
+                    <span class="task-card-type ${task.type === 'השקעה' ? 'investment' : 'expense'}">${task.type}</span>
                 </div>
             </div>
             ${exportButtons}
@@ -1127,7 +1128,7 @@ export class UIRenderer {
         `;
 
         // Show modal
-        this.modalManager.showModal('taskModal', 'taskModalTitle', 'taskModalBody', content);
+        this.modalManager.showModal('taskModal', content);
 
         // Setup export handlers
         this.modalManager.setupExportHandlers(
