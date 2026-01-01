@@ -173,12 +173,12 @@
 
             <!-- Tab: Hours -->
             <section class="tab-content" id="hoursTab">
-                <!-- מפת חום משימות -->
+                <!-- משימות -->
                 <div class="card">
-                    <h2>מפת חום - משימות</h2>
-                    <div id="matrixView" class="matrix-container">
+                    <h2>משימות</h2>
+                    <div id="tasksCardsContainer" class="tasks-cards-grid">
                         <div class="empty-message" style="padding: 60px;">
-                            <div>מפת החום תיטען כאן...</div>
+                            <div>טען קובץ שעות להצגת משימות</div>
                         </div>
                     </div>
                 </div>
@@ -267,6 +267,19 @@
                 <button class="modal-close" id="closeEmployeeListModal">&times;</button>
             </div>
             <div class="modal-body" id="employeeListModalBody">
+                <!-- Content will be populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Details Modal -->
+    <div class="modal-overlay" id="taskModal" style="display: none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="taskModalTitle">פרטי משימה</h2>
+                <button class="modal-close" id="closeTaskModal">&times;</button>
+            </div>
+            <div class="modal-body" id="taskModalBody">
                 <!-- Content will be populated by JS -->
             </div>
         </div>

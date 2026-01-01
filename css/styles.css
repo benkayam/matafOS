@@ -1381,3 +1381,88 @@ html {
     color: var(--fibi-gray-500);
 }
 
+/* ===== Tasks Cards Grid ===== */
+.tasks-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.task-card {
+    background: white;
+    border: 1px solid var(--fibi-gray-200);
+    border-radius: 8px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.task-card:hover {
+    border-color: var(--fibi-blue-primary);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.task-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 10px;
+}
+
+.task-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fibi-blue-primary);
+    line-height: 1.4;
+    flex: 1;
+}
+
+.task-card-hours {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--fibi-blue-dark);
+    white-space: nowrap;
+}
+
+.task-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--fibi-gray-600);
+}
+
+.task-card-employees {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.task-card-employees svg {
+    width: 16px;
+    height: 16px;
+    color: var(--fibi-gray-500);
+}
+
+.task-card-type {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.task-card-type.investment {
+    background: var(--fibi-green-light);
+    color: var(--fibi-green-dark);
+}
+
+.task-card-type.expense {
+    background: var(--fibi-red-light);
+    color: var(--fibi-red-dark);
+}
+

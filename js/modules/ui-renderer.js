@@ -1048,5 +1048,110 @@ export class UIRenderer {
             timeout = setTimeout(later, wait);
         };
     }
+
+    /**
+     * Render tasks cards grid
+     */
+    renderTasksCards(tasks) {
+        const container = document.getElementById('tasksCardsContainer');
+        if (!container) return;
+
+        if (!tasks || tasks.length === 0) {
+            container.innerHTML = '<div class="empty-message" style="padding: 60px;"><div>אין משימות להצגה</div></div>';
+            return;
+        }
+
+        container.innerHTML = tasks.map(task => `
+            <div class="task-card" onclick="window.app && window.app.showTaskModal('${this.escapeHtml(task.name)}')">
+                <div class="task-card-header">
+                    <div class="task-card-title">${this.escapeHtml(task.name)}</div>
+                    <div class="task-card-hours">${this.formatNumber(task.totalHours)}</div>
+                </div>
+                <div class="task-card-meta">
+                    <div class="task-card-employees">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        <span>${task.employees.length} עובדים</span>
+                    </div>
+                    <span class="task-card-type ${task.type === 'השקעה' ? 'investment' : 'expense'}">
+                        ${task.type}
+                    </span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * Show task modal with employee details
+     */
+    showTaskModal(taskName) {
+        const task = window.app.dataProcessor.getTaskByName(taskName);
+        if (!task) {
+            console.error('Task not found:', taskName);
+            return;
+        }
+
+        const modalManager = window.ModalManager;
+        
+        // Prepare table data
+        const headers = ['עובד', 'שעות'];
+        const rows = task.employees.map(emp => [
+            emp.name,
+            this.formatNumber(emp.hours)
+        ]);
+
+        // Create table
+        const tableHTML = modalManager.createTable('taskEmployeesTable', headers, rows);
+        
+        // Create export buttons
+        const exportButtons = modalManager.createExportButtons('exportTaskExcel', 'exportTaskPDF');
+        
+        // Combine content
+        const content = `
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                        <h3 style="margin: 0 0 8px 0; color: var(--fibi-blue-primary);">${this.escapeHtml(task.name)}</h3>
+                        <div style="display: flex; gap: 20px; font-size: 14px; color: var(--fibi-gray-600);">
+                            <span>סה"כ שעות: <strong>${this.formatNumber(task.totalHours)}</strong></span>
+                            <span>מספר עובדים: <strong>${task.employees.length}</strong></span>
+                            <span class="task-card-type ${task.type === 'השקעה' ? 'investment' : 'expense'}">${task.type}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            ${exportButtons}
+            ${tableHTML}
+        `;
+
+        // Show modal
+        modalManager.showModal('taskModal', 'taskModalTitle', 'taskModalBody', content);
+
+        // Setup export handlers
+        modalManager.setupExportHandlers(
+            'exportTaskExcel',
+            'exportTaskPDF',
+            () => window.app.exportTaskToExcel(task),
+            () => window.app.exportTaskToPDF(task)
+        );
+
+        // Setup close handler
+        document.getElementById('closeTaskModal').onclick = () => {
+            modalManager.hideModal('taskModal');
+        };
+    }
+
+    /**
+     * Escape HTML to prevent XSS
+     */
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
 }
 

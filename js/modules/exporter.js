@@ -333,4 +333,49 @@ export class Exporter {
 
         this.exportToPDF({ data, columns, title, filename });
     }
+
+    /**
+     * Export task details to Excel
+     */
+    exportTaskToExcel(task, filename = 'task-details') {
+        const data = task.employees.map(emp => ({
+            'עובד': emp.name || '',
+            'שעות': emp.hours || 0
+        }));
+
+        // Add summary row
+        data.push({
+            'עובד': 'סה"כ',
+            'שעות': task.totalHours || 0
+        });
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'משימה');
+        XLSX.writeFile(wb, `${filename}.xlsx`);
+    }
+
+    /**
+     * Export task details to PDF
+     */
+    exportTaskToPDF(task, filename = 'task-details') {
+        const title = `משימה: ${task.name}`;
+        const columns = [
+            { header: 'עובד', dataKey: 'employee' },
+            { header: 'שעות', dataKey: 'hours' }
+        ];
+
+        const data = task.employees.map(emp => ({
+            employee: emp.name || '',
+            hours: (emp.hours || 0).toLocaleString('he-IL')
+        }));
+
+        // Add summary row
+        data.push({
+            employee: 'סה"כ',
+            hours: (task.totalHours || 0).toLocaleString('he-IL')
+        });
+
+        this.exportToPDF({ data, columns, title, filename });
+    }
 }

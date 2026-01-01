@@ -84,15 +84,9 @@ class DashboardApp {
             this.uiRenderer.updateKPIs(stats);
             
         } else if (currentTab === 'hours') {
-            // Refresh hours tab
-            const hours = this.dataProcessor.getHoursData();
-            this.uiRenderer.renderHoursTable(hours);
-            
-            const taskMatrix = this.dataProcessor.getTaskMatrix();
-            this.uiRenderer.renderTaskMatrix(taskMatrix);
-            
-            const taskKPIs = this.dataProcessor.getTaskKPIs();
-            this.uiRenderer.updateTaskKPIs(taskKPIs);
+            // Refresh tasks tab
+            const tasks = this.dataProcessor.getTasksGrouped();
+            this.uiRenderer.renderTasksCards(tasks);
             
         } else if (currentTab === 'requirements') {
             // Requirements tab doesn't need team filtering
@@ -115,16 +109,9 @@ class DashboardApp {
         this.uiRenderer.updateKPIs(stats);
         
         if (type === 'hours') {
-            // Note: Hours table removed from UI (not needed)
-            // this.uiRenderer.renderHoursTable(this.dataProcessor.getHours());
-            
-            // Render task matrix (heatmap)
-            const taskMatrix = this.dataProcessor.getTaskMatrix();
-            this.uiRenderer.renderTaskMatrix(taskMatrix);
-            
-            // Update task KPIs
-            const taskKPIs = this.dataProcessor.getTaskKPIs();
-            this.uiRenderer.updateTaskKPIs(taskKPIs);
+            // Render tasks cards
+            const tasks = this.dataProcessor.getTasksGrouped();
+            this.uiRenderer.renderTasksCards(tasks);
             
             // Render employees table
             const employees = this.dataProcessor.getEmployeesArray();
@@ -312,6 +299,37 @@ class DashboardApp {
             return;
         }
         this.exporter.exportRequirementsToPDF(requirements, 'רשימת דרישות', 'requirements-list');
+    }
+
+    /**
+     * Show task modal
+     */
+    showTaskModal(taskName) {
+        this.uiRenderer.showTaskModal(taskName);
+    }
+
+    /**
+     * Export task to Excel
+     */
+    exportTaskToExcel(task) {
+        if (!task || !task.employees || task.employees.length === 0) {
+            alert('אין נתונים לייצוא');
+            return;
+        }
+        const filename = `task-${task.name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, '_')}`;
+        this.exporter.exportTaskToExcel(task, filename);
+    }
+
+    /**
+     * Export task to PDF
+     */
+    exportTaskToPDF(task) {
+        if (!task || !task.employees || task.employees.length === 0) {
+            alert('אין נתונים לייצוא');
+            return;
+        }
+        const filename = `task-${task.name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, '_')}`;
+        this.exporter.exportTaskToPDF(task, filename);
     }
 }
 

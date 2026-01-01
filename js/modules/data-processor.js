@@ -658,6 +658,65 @@ export class DataProcessor {
     }
 
     /**
+     * Get tasks grouped by task name with employee details
+     */
+    getTasksGrouped() {
+        const hours = this.getHours(); // Already filtered by team
+        const tasksMap = new Map();
+
+        hours.forEach(record => {
+            const taskName = record.task || 'ללא משימה';
+            
+            if (!tasksMap.has(taskName)) {
+                tasksMap.set(taskName, {
+                    name: taskName,
+                    totalHours: 0,
+                    employees: [],
+                    type: record.type || 'השקעה',
+                    employeeIds: new Set()
+                });
+            }
+
+            const task = tasksMap.get(taskName);
+            task.totalHours += record.hours || 0;
+
+            // Add employee if not already added
+            if (!task.employeeIds.has(record.employeeId)) {
+                task.employeeIds.add(record.employeeId);
+                task.employees.push({
+                    id: record.employeeId,
+                    name: record.employee,
+                    hours: record.hours || 0
+                });
+            } else {
+                // Update existing employee hours
+                const emp = task.employees.find(e => e.id === record.employeeId);
+                if (emp) {
+                    emp.hours += record.hours || 0;
+                }
+            }
+        });
+
+        // Convert to array and sort by total hours
+        const tasksArray = Array.from(tasksMap.values()).map(task => {
+            // Sort employees by hours
+            task.employees.sort((a, b) => b.hours - a.hours);
+            delete task.employeeIds; // Remove the Set, not needed in output
+            return task;
+        });
+
+        return tasksArray.sort((a, b) => b.totalHours - a.totalHours);
+    }
+
+    /**
+     * Get task details by name
+     */
+    getTaskByName(taskName) {
+        const tasks = this.getTasksGrouped();
+        return tasks.find(t => t.name === taskName);
+    }
+
+    /**
      * Get employees by type (מתף/פרויקטלי)
      */
     getEmployeesByType(type) {
