@@ -1095,8 +1095,6 @@ export class UIRenderer {
             return;
         }
 
-        const modalManager = window.ModalManager;
-        
         // Prepare table data
         const headers = ['עובד', 'שעות'];
         const rows = task.employees.map(emp => [
@@ -1105,10 +1103,10 @@ export class UIRenderer {
         ]);
 
         // Create table
-        const tableHTML = modalManager.createTable('taskEmployeesTable', headers, rows);
+        const tableHTML = this.modalManager.createTable('taskEmployeesTable', headers, rows);
         
         // Create export buttons
-        const exportButtons = modalManager.createExportButtons('exportTaskExcel', 'exportTaskPDF');
+        const exportButtons = this.modalManager.createExportButtons('exportTaskExcel', 'exportTaskPDF');
         
         // Combine content
         const content = `
@@ -1129,10 +1127,10 @@ export class UIRenderer {
         `;
 
         // Show modal
-        modalManager.showModal('taskModal', 'taskModalTitle', 'taskModalBody', content);
+        this.modalManager.showModal('taskModal', 'taskModalTitle', 'taskModalBody', content);
 
         // Setup export handlers
-        modalManager.setupExportHandlers(
+        this.modalManager.setupExportHandlers(
             'exportTaskExcel',
             'exportTaskPDF',
             () => window.app.exportTaskToExcel(task),
@@ -1141,7 +1139,7 @@ export class UIRenderer {
 
         // Setup close handler
         document.getElementById('closeTaskModal').onclick = () => {
-            modalManager.hideModal('taskModal');
+            this.modalManager.hideModal('taskModal');
         };
     }
 
