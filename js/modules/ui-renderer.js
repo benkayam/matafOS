@@ -62,12 +62,12 @@ export class UIRenderer {
         const kpiTotalHoursCard = document.getElementById('kpiTotalHoursCard');
         
         if (kpiEmployeesCard && kpiTotalHoursCard) {
-            if (tabName === 'requirements') {
-                // Hide these cards in requirements tab
+            if (tabName === 'requirements' || tabName === 'hours') {
+                // Hide these cards in requirements and tasks (hours) tabs
                 kpiEmployeesCard.style.display = 'none';
                 kpiTotalHoursCard.style.display = 'none';
             } else {
-                // Show in other tabs
+                // Show only in employees tab
                 kpiEmployeesCard.style.display = 'block';
                 kpiTotalHoursCard.style.display = 'block';
             }
