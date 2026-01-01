@@ -1,0 +1,750 @@
+/* ============================================
+   FIBI Design System - Global Variables
+   Updated with comprehensive color palette and media queries
+   ============================================ */
+
+/* ================================
+   CSS VARIABLES (ROOT)
+   ================================ */
+
+:root {
+  /* ================================
+     FIBI BRAND COLORS
+     ================================ */
+  
+  /* Primary Brand Colors */
+  --fibi-blue-primary: #18285f;
+  --fibi-blue-shadow: rgba(24, 40, 95, 0.34);
+  
+  /* Secondary Brand Colors */
+  --fibi-yellow-primary: #ffc10e;
+  --fibi-yellow-hover: #e6ad0c;
+  --fibi-yellow-gradient-start: #ffc107;
+  --fibi-yellow-gradient-end: #ff9800;
+  
+  /* Base Colors */
+  --fibi-card-background: #FFF;
+  --fibi-white: #ffffff;
+  --fibi-black: #000000;
+  --fibi-blue-light: #eef5fb;
+  --fibi-gray-50: #f9fafb;
+  --fibi-gray-100: #f3f4f6;
+  --fibi-gray-200: #F6F6F6;
+  --fibi-gray-250: #E8E8E8;
+  --fibi-gray-300: #CED4E0;
+  --fibi-gray-400: #9ca3af;
+  --fibi-gray-500: #8C8C8C;
+  --fibi-gray-550: #66779E;
+  --fibi-gray-600: #222020;
+  --fibi-gray-700: #374151;
+  --fibi-gray-800: #1f2937;
+  --fibi-gray-900: #111827;
+  
+  /* Semantic UI Colors */
+  --fibi-success: #059669;
+  --fibi-warning: #d97706;
+  --fibi-error: #EA454F;
+  --fibi-info: #0284c7;
+  
+  /* Shadow Colors */
+  --fibi-shadow-light: rgba(0, 0, 0, 0.1);
+  --fibi-shadow-medium: rgba(0, 0, 0, 0.15);
+  --fibi-shadow-heavy: rgba(0, 0, 0, 0.34);
+  
+  /* ================================
+     WIZARD COMPONENT COLORS
+     ================================ */
+  
+  --wizard-blue-primary: var(--fibi-blue-primary);
+  --wizard-blue-shadow: var(--fibi-blue-shadow);
+  --wizard-yellow-primary: var(--fibi-yellow-primary);
+  --wizard-yellow-hover: var(--fibi-yellow-hover);
+  --wizard-yellow-gradient-start: var(--fibi-yellow-gradient-start);
+  --wizard-yellow-gradient-end: var(--fibi-yellow-gradient-end);
+  --wizard-white-bg: var(--fibi-white);
+  --wizard-progress-track: var(--fibi-gray-200);
+  --wizard-progress-fill: var(--fibi-blue-primary);
+  --wizard-text-primary: var(--fibi-blue-primary);
+  --wizard-text-white: var(--fibi-white);
+  --wizard-text-secondary: var(--fibi-gray-600);
+  --wizard-card-border: var(--fibi-gray-300);
+  --wizard-card-shadow: var(--fibi-shadow-light);
+  --wizard-card-shadow-hover: var(--fibi-shadow-medium);
+  --wizard-card-shadow-active: rgba(24, 40, 95, 0.2);
+  --wizard-card-border-active: var(--fibi-blue-primary);
+  
+  /* ================================
+     LEGACY SUPPORT (for backward compatibility)
+     ================================ */
+  
+  --primary-blue-dark: var(--fibi-blue-primary);
+  --primary-blue-medium: #17285E;
+  --primary-blue-light: var(--fibi-blue-light);
+  --primary-gold: var(--fibi-yellow-primary);
+  --navy: #242C8E;
+  --slate-blue: #2E3D70;
+  --light-gray: #f8fafc;
+  --border-gray: #e2e8f0;
+  --light-border: #e2e8f0;
+  --success-green: #10823D;
+  --success-green-light: #dcfce7;
+  --success-green-dark: #166534;
+  --error-red: #ef4444;
+  --error-red-light: #fee2e2;
+  --error-red-dark: #dc2626;
+  --warning-orange: #ffc10e;
+  --warning-orange-light: #fef3c7;
+  --warning-orange-dark: #92400e;
+  --text-dark: var(--fibi-blue-primary);
+  --text-gray: #475569;
+  --text-light-gray: #64748b;
+  --text-lighter-gray: #94a3b8;
+  --text-white: var(--fibi-white);
+  --color-white: var(--fibi-white);
+  --color-black: var(--fibi-black);
+  --color-gray-200: var(--fibi-gray-200);
+  --color-gray-600: var(--fibi-gray-600);
+  --color-deposit-primary: var(--fibi-blue-primary);
+  --Secondary-Blue-dark-gray: var(--fibi-gray-550);
+  --Secondary-Light-blue-new: var(--fibi-blue-light);
+  --color-primary: var(--fibi-blue-primary);
+  --color-secondary: var(--fibi-yellow-primary);
+  
+  /* ================================
+     TYPOGRAPHY SYSTEM
+     ================================ */
+  
+  /* Font Families */
+  --font-family-main: "Assistant-Regular", -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, Arial, sans-serif;
+  --font-family-bold: "Assistant-Bold", -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, Arial, sans-serif;
+  --font-family-semibold: "Assistant-SemiBold", -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, Arial, sans-serif;
+  --font-family-light: "Assistant-Light", -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, Arial, sans-serif;
+  --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  
+  /* Font Sizes - 1rem = 1px system */
+  --font-size-12: 12px;
+  --font-size-14: 14px;
+  --font-size-16: 16px;
+  --font-size-18: 18px;
+  --font-size-20: 20px;
+  --font-size-22: 22px;
+  --font-size-40: 40px;
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 22px;
+  --font-size-3xl: 30px;
+  --font-size-4xl: 36px;
+  --font-size-5xl: 48px;
+  --font-size-6xl: 60px;
+  --font-size-7xl: 72px;
+  
+  /* Font Weights */
+  --font-weight-extralight: 200;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+  
+  /* ================================
+     SPACING SYSTEM
+     ================================ */
+  
+  --spacing-0: 0px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+  --spacing-30: 120px;
+  --spacing-32: 128px;
+  --spacing-40: 160px;
+  --spacing-48: 192px;
+  --spacing-56: 224px;
+  --spacing-64: 256px;
+  
+  /* Spacing Aliases */
+  --spacing-xs: var(--spacing-1);
+  --spacing-sm: var(--spacing-2);
+  --spacing-md: var(--spacing-4);
+  --spacing-lg: var(--spacing-6);
+  --spacing-xl: var(--spacing-8);
+  --spacing-2xl: var(--spacing-12);
+  --spacing-3xl: var(--spacing-16);
+  
+  /* ================================
+     BORDER RADIUS SYSTEM
+     ================================ */
+  
+  --border-radius-none: 0;
+  --border-radius-sm: 2px;
+  --border-radius-base: 4px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 8px;
+  --border-radius-xl: 12px;
+  --border-radius-2xl: 16px;
+  --border-radius-3xl: 24px;
+  --border-radius-full: 9999px;
+  
+  /* Radius Aliases */
+  --radius-sm: var(--border-radius-sm);
+  --radius-md: var(--border-radius-lg);
+  --radius-lg: var(--border-radius-xl);
+  --radius-xl: var(--border-radius-2xl);
+  --radius-full: var(--border-radius-full);
+  
+  /* ================================
+     SHADOW SYSTEM
+     ================================ */
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  --shadow-none: 0 0 #0000;
+  
+  /* ================================
+     Z-INDEX SYSTEM
+     ================================ */
+  
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1020;
+  --z-index-fixed: 1030;
+  --z-index-modal-backdrop: 1040;
+  --z-index-modal: 1050;
+  --z-index-popover: 1060;
+  --z-index-tooltip: 1070;
+  --z-index-toast: 1080;
+  
+  /* ================================
+     TRANSITIONS
+     ================================ */
+  
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.4s ease;
+}
+
+/* ============================================
+   BASE ELEMENTS
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family-main);
+  color: var(--text-dark);
+  background: var(--light-gray);
+  direction: rtl;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  direction: rtl;
+}
+
+/* ============================================
+   HEADINGS
+   ============================================ */
+
+h1,
+.fibi-title {
+  font-family: var(--font-family-bold);
+  color: var(--primary-blue-dark);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+  padding: 0;
+}
+
+h2 {
+  font-family: var(--font-family-semibold);
+  color: var(--primary-blue-dark);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin: var(--spacing-lg) 0;
+}
+
+h3 {
+  font-family: var(--font-family-semibold);
+  color: var(--primary-blue-dark);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+button {
+  font-family: var(--font-family-main);
+  border: none;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-base);
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.btn,
+.btn-primary {
+  background-color: var(--primary-blue-dark);
+  color: var(--text-white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-blue-medium);
+}
+
+.btn-secondary {
+  background: var(--fibi-yellow-primary);
+  color: var(--fibi-blue-primary);
+  border: none;
+  height: 32px;
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-secondary:hover {
+  background: var(--fibi-yellow-hover);
+}
+
+.btn-secondary:disabled {
+  background: var(--fibi-gray-250);
+  cursor: not-allowed;
+  color: var(--fibi-gray-500);
+}
+
+.btn-success {
+  background-color: var(--success-green);
+  color: var(--text-white);
+}
+
+.btn-success:hover {
+  background-color: #0D6930;
+}
+
+.btn-danger {
+  background-color: var(--error-red);
+  color: var(--text-white);
+}
+
+.btn-danger:hover {
+  background-color: #A00116;
+}
+
+.btn-text {
+  background-color: transparent;
+  color: var(--primary-blue-dark);
+  padding: 0;
+}
+
+.btn-sm {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-xs);
+}
+
+.btn-lg {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  font-size: var(--font-size-base);
+}
+
+/* ============================================
+   LINKS
+   ============================================ */
+
+a {
+  color: var(--primary-blue-dark);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  text-decoration: underline;
+  color: var(--primary-blue-medium);
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--text-white);
+}
+
+thead {
+  background-color: var(--primary-blue-light);
+  border-bottom: 2px solid var(--primary-blue-dark);
+}
+
+th {
+  padding: var(--spacing-md) var(--spacing-lg);
+  text-align: right;
+  font-family: var(--font-family-semibold);
+  color: var(--primary-blue-dark);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+}
+
+td {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--light-border);
+  color: var(--text-dark);
+  font-size: var(--font-size-sm);
+}
+
+tr:hover {
+  background-color: var(--primary-blue-light);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Lists */
+ul, ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  padding: var(--spacing-md) 0;
+  color: var(--text-dark);
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* ============================================
+   CARDS & CONTAINERS
+   ============================================ */
+
+.card,
+.section {
+  background-color: var(--fibi-card-background);
+  border: 1px solid var(--border-gray);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-lg);
+  transition: all var(--transition-base);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+}
+
+/* ============================================
+   NAVIGATION
+   ============================================ */
+
+nav {
+  background-color: var(--primary-blue-dark);
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+nav a {
+  color: var(--text-white);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  display: inline-block;
+}
+
+nav a:hover {
+  color: var(--primary-gold);
+  text-decoration: none;
+}
+
+nav button {
+  color: var(--text-white);
+  background: transparent;
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+nav button:hover {
+  color: var(--primary-gold);
+}
+
+/* ============================================
+   FORMS & INPUTS
+   ============================================ */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="number"],
+textarea,
+select {
+  font-family: var(--font-family-main);
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-gray);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-dark);
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary-blue-dark);
+  box-shadow: 0 0 0 3px rgba(24, 40, 95, 0.1);
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+
+.badge,
+.badge-success {
+  background-color: var(--success-green);
+  color: var(--text-white);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  display: inline-block;
+}
+
+.badge-error,
+.badge-danger {
+  background-color: var(--error-red);
+  color: var(--text-white);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.badge-warning {
+  background-color: var(--primary-gold);
+  color: var(--text-dark);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.badge-primary {
+  background-color: var(--primary-blue-dark);
+  color: var(--text-white);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-success {
+  color: var(--success-green);
+}
+
+.text-danger {
+  color: var(--error-red);
+}
+
+.text-warning {
+  color: var(--primary-gold);
+}
+
+.text-primary {
+  color: var(--primary-blue-dark);
+}
+
+.mt-1 { margin-top: var(--spacing-sm); }
+.mt-2 { margin-top: var(--spacing-md); }
+.mt-3 { margin-top: var(--spacing-lg); }
+.mt-4 { margin-top: var(--spacing-xl); }
+
+.mb-1 { margin-bottom: var(--spacing-sm); }
+.mb-2 { margin-bottom: var(--spacing-md); }
+.mb-3 { margin-bottom: var(--spacing-lg); }
+.mb-4 { margin-bottom: var(--spacing-xl); }
+
+.p-1 { padding: var(--spacing-sm); }
+.p-2 { padding: var(--spacing-md); }
+.p-3 { padding: var(--spacing-lg); }
+.p-4 { padding: var(--spacing-xl); }
+
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.gap-1 { gap: var(--spacing-sm); }
+.gap-2 { gap: var(--spacing-md); }
+.gap-3 { gap: var(--spacing-lg); }
+
+.hidden {
+  display: none !important;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+.grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* ============================================
+   RESPONSIVE DESIGN - MEDIA QUERIES
+   ============================================ */
+
+/* Mobile First (min-width) */
+@media (min-width: 320px) {
+  /* Extra Small devices */
+}
+
+@media (min-width: 576px) {
+  /* Small devices */
+}
+
+@media (min-width: 768px) {
+  /* Medium devices - Tablets */
+  h1,
+  .fibi-title {
+    font-size: var(--font-size-2xl);
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Large devices - Desktop Base */
+  .container {
+    max-width: 1200px;
+  }
+}
+
+@media (min-width: 1200px) {
+  /* Extra Large devices */
+  .container {
+    max-width: 1400px;
+  }
+}
+
+@media (min-width: 1600px) {
+  /* 2X Large devices */
+}
+
+@media (min-width: 1920px) {
+  /* 3X Large devices - Full HD */
+}
+
+/* Desktop First (max-width) */
+@media (max-width: 1023px) {
+  /* Mobile/Tablet - Below Desktop */
+  .container {
+    padding: 0 var(--spacing-md);
+  }
+}
+
+@media (max-width: 768px) {
+  /* Below Medium */
+  h1,
+  .fibi-title {
+    font-size: var(--font-size-lg);
+  }
+  
+  .card,
+  .section {
+    padding: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 576px) {
+  /* Below Small */
+  button {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  /* Mobile Portrait */
+  h1,
+  .fibi-title {
+    font-size: var(--font-size-md);
+  }
+}

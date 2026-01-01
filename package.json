@@ -1,0 +1,19 @@
+{
+  "name": "manager-dashboard-v2",
+  "version": "2.0.0",
+  "description": "דשבורד ניהול שעות ודרישות - גרסה מחודשת",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python3 -m http.server 8081",
+    "start": "python3 -m http.server 8081"
+  },
+  "keywords": [
+    "dashboard",
+    "hours",
+    "requirements",
+    "management"
+  ],
+  "author": "Ben",
+  "license": "MIT"
+}
+
