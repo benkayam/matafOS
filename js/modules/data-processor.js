@@ -684,12 +684,12 @@ export class DataProcessor {
             const taskName = record.task || 'ללא משימה';
             
             if (!tasksMap.has(taskName)) {
-                // Build full path: תת פעילות -> פעילות משנה -> פעילות -> משימה
+                // Build full path: משימה -> פעילות -> פעילות משנה -> תת פעילות
                 const pathParts = [
-                    record.subSubActivity,
-                    record.subActivity,
+                    record.taskField,
                     record.activity,
-                    record.taskField
+                    record.subActivity,
+                    record.subSubActivity
                 ].filter(part => part && part.trim()); // Remove empty parts
                 
                 const fullPath = pathParts.length > 0 ? pathParts.join(' → ') : 'ללא משימה';
