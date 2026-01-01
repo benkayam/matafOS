@@ -692,7 +692,7 @@ export class DataProcessor {
                     record.subSubActivity
                 ].filter(part => part && part.trim()); // Remove empty parts
                 
-                const fullPath = pathParts.length > 0 ? pathParts.join(' → ') : 'ללא משימה';
+                const fullPath = pathParts.length > 0 ? pathParts.join(' ← ') : 'ללא משימה';
                 
                 tasksMap.set(taskName, {
                     name: taskName,

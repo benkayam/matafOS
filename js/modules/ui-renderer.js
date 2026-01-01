@@ -1117,10 +1117,10 @@ export class UIRenderer {
         // Combine content
         const content = `
             <div style="margin-bottom: 20px;">
-                <div style="display: flex; gap: 20px; font-size: 14px; color: var(--fibi-gray-600); padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                <div style="display: flex; gap: 20px; align-items: center; font-size: 14px; color: var(--fibi-gray-600); padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
                     <span>סה"כ שעות: <strong style="color: var(--fibi-blue-primary);">${this.formatNumber(task.totalHours)}</strong></span>
                     <span>מספר עובדים: <strong style="color: var(--fibi-blue-primary);">${task.employees.length}</strong></span>
-                    <span class="task-card-type ${task.type === 'השקעה' ? 'investment' : 'expense'}">${task.type}</span>
+                    <span class="task-card-type ${task.type === 'השקעה' ? 'investment' : 'expense'}" style="font-size: 14px;">${task.type}</span>
                 </div>
             </div>
             ${exportButtons}
