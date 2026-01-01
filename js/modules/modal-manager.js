@@ -120,6 +120,34 @@ export class ModalManager
 
         modal.style.display = 'flex';
         this.currentModal = modal;
+
+        // Setup click outside to close
+        this.setupClickOutsideToClose(modalId);
+    }
+
+    /**
+     * Setup click outside modal to close
+     */
+    setupClickOutsideToClose(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+
+        // Remove existing listener if any
+        if (modal._clickOutsideHandler) {
+            modal.removeEventListener('click', modal._clickOutsideHandler);
+        }
+
+        // Create new handler
+        const handler = (e) => {
+            // Close only if clicking on the overlay itself, not on modal content
+            if (e.target === modal) {
+                this.hideModal(modalId);
+            }
+        };
+
+        // Store handler reference for cleanup
+        modal._clickOutsideHandler = handler;
+        modal.addEventListener('click', handler);
     }
 
     /**

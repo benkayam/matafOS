@@ -684,12 +684,28 @@ export class DataProcessor {
             const taskName = record.task || 'ללא משימה';
             
             if (!tasksMap.has(taskName)) {
+                // Build full path: תת פעילות -> פעילות משנה -> פעילות -> משימה
+                const pathParts = [
+                    record.subSubActivity,
+                    record.subActivity,
+                    record.activity,
+                    record.taskField
+                ].filter(part => part && part.trim()); // Remove empty parts
+                
+                const fullPath = pathParts.length > 0 ? pathParts.join(' → ') : 'ללא משימה';
+                
                 tasksMap.set(taskName, {
                     name: taskName,
+                    fullPath: fullPath,
                     totalHours: 0,
                     employees: [],
                     type: record.type || 'השקעה',
-                    employeeIds: new Set()
+                    employeeIds: new Set(),
+                    // Store individual fields for reference
+                    taskField: record.taskField || '',
+                    activity: record.activity || '',
+                    subActivity: record.subActivity || '',
+                    subSubActivity: record.subSubActivity || ''
                 });
             }
 

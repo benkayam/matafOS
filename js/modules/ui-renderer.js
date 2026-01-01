@@ -1108,10 +1108,10 @@ export class UIRenderer {
         // Create export buttons
         const exportButtons = this.modalManager.createExportButtons('exportTaskExcel', 'exportTaskPDF');
         
-        // Update modal title
+        // Update modal title with full path
         const modalTitle = document.getElementById('taskModalTitle');
         if (modalTitle) {
-            modalTitle.textContent = task.name;
+            modalTitle.textContent = task.fullPath || task.name;
         }
 
         // Combine content
@@ -1138,7 +1138,7 @@ export class UIRenderer {
             () => window.app.exportTaskToPDF(task)
         );
 
-        // Setup close handler
+        // Setup close handler for X button
         document.getElementById('closeTaskModal').onclick = () => {
             this.modalManager.hideModal('taskModal');
         };
