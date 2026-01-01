@@ -1103,7 +1103,7 @@ export class UIRenderer {
         ]);
 
         // Create table
-        const tableHTML = this.modalManager.createTable('taskEmployeesTable', headers, rows);
+        const tableHTML = this.modalManager.createTable(headers, rows, 'taskEmployeesTable');
         
         // Create export buttons
         const exportButtons = this.modalManager.createExportButtons('exportTaskExcel', 'exportTaskPDF');
