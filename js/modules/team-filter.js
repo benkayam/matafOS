@@ -83,13 +83,25 @@ export class TeamFilter {
 
         // Load teams structure
         this.loadTeamsStructure().then(() => {
-            // Populate selector if needed (already in HTML)
+            // Load saved team from localStorage
+            const savedTeam = this.loadSavedTeam();
+            if (savedTeam) {
+                teamSelector.value = savedTeam;
+                this.currentTeam = savedTeam;
+                console.log(`💾 Loaded saved team: ${savedTeam}`);
+                
+                // Trigger callback with saved team
+                if (this.onTeamChange) {
+                    this.onTeamChange(savedTeam);
+                }
+            } else {
+                this.currentTeam = teamSelector.value || 'all';
+            }
+
+            // Setup change listener
             teamSelector.addEventListener('change', (e) => {
                 this.setCurrentTeam(e.target.value);
             });
-
-            // Set initial team
-            this.currentTeam = teamSelector.value || 'all';
         });
     }
 
@@ -100,8 +112,36 @@ export class TeamFilter {
         this.currentTeam = teamId;
         console.log(`📊 Team changed to: ${teamId}`);
         
+        // Save to localStorage
+        this.saveTeam(teamId);
+        
         if (this.onTeamChange) {
             this.onTeamChange(teamId);
+        }
+    }
+
+    /**
+     * Save selected team to localStorage
+     */
+    saveTeam(teamId) {
+        try {
+            localStorage.setItem('matafOS_selectedTeam', teamId);
+            console.log(`💾 Team saved: ${teamId}`);
+        } catch (error) {
+            console.error('Failed to save team to localStorage:', error);
+        }
+    }
+
+    /**
+     * Load saved team from localStorage
+     */
+    loadSavedTeam() {
+        try {
+            const savedTeam = localStorage.getItem('matafOS_selectedTeam');
+            return savedTeam || null;
+        } catch (error) {
+            console.error('Failed to load team from localStorage:', error);
+            return null;
         }
     }
 
