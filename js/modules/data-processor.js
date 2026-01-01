@@ -57,17 +57,33 @@ export class DataProcessor {
             const employeeTypeRaw = this.findColumn(row, CONFIG.HOURS_COLUMNS.EMPLOYEE_TYPE) || '';
             const employeeType = this.normalizeEmployeeType(employeeTypeRaw);
             
+            // Read all task-related fields
+            const subSubActivity = this.findColumn(row, CONFIG.HOURS_COLUMNS.SUB_SUB_ACTIVITY) || '';
+            const subActivity = this.findColumn(row, CONFIG.HOURS_COLUMNS.SUB_ACTIVITY) || '';
+            const activity = this.findColumn(row, CONFIG.HOURS_COLUMNS.ACTIVITY) || '';
+            const taskField = this.findColumn(row, CONFIG.HOURS_COLUMNS.TASK) || '';
+            
+            // Determine task name based on priority:
+            // 1. If sub-sub-activity exists, use it
+            // 2. Else if sub-activity exists, use it
+            // 3. Else if activity exists, use it
+            // 4. Else use task field
+            const taskName = subSubActivity || subActivity || activity || taskField || 'ללא משימה';
+            
             return {
                 employee: this.findColumn(row, CONFIG.HOURS_COLUMNS.EMPLOYEE_NAME) || '',
                 employeeId: employeeId,
                 employeeType: employeeType, // Direct from Excel: "עובד מתף" or "עובד פרויקטלי"
                 date: this.formatDate(this.findColumn(row, CONFIG.HOURS_COLUMNS.DATE)),
                 hours: parseFloat(this.findColumn(row, CONFIG.HOURS_COLUMNS.HOURS)) || 0,
-                task: this.findColumn(row, CONFIG.HOURS_COLUMNS.TASK) || '',
-                subtask: this.findColumn(row, CONFIG.HOURS_COLUMNS.SUBTASK) || '',
+                task: taskName,
+                activity: activity,
+                subActivity: subActivity,
+                subSubActivity: subSubActivity,
+                taskField: taskField,
                 classification: classificationValue,
                 type: workType,
-                requirement: this.extractRequirement(this.findColumn(row, CONFIG.HOURS_COLUMNS.TASK)),
+                requirement: this.extractRequirement(taskField),
                 raw: row
             };
         }).filter(row => row.employee && row.hours > 0);

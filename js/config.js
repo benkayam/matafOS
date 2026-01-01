@@ -38,8 +38,10 @@ export const CONFIG = {
         EMPLOYEE_TYPE: ['סוג  עובד'],
         DATE: ['תאריך דיווח', 'תאריך', 'Date'],
         HOURS: ['סה"כ שעות מדווחות', 'שעות', 'Hours'],
-        TASK: ['משימה', 'פעילות', 'Task'],
-        SUBTASK: ['פעילות משנה', 'SubTask', 'Sub Task'],
+        ACTIVITY: ['פעילות', 'Activity'],
+        SUB_ACTIVITY: ['פעילות משנה', 'SubActivity', 'Sub Activity'],
+        SUB_SUB_ACTIVITY: ['תת פעילות', 'SubSubActivity'],
+        TASK: ['משימה', 'Task'],
         CLASSIFICATION: ['פעילות.סיווג חשבונאי', 'סיווג', 'Classification']
     },
     
