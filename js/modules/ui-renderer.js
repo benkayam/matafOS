@@ -165,10 +165,12 @@ export class UIRenderer {
      * Update task KPIs - Hours tab
      */
     updateTaskKPIs(kpis) {
-        this.setElementText('totalTasks', kpis.total || '-');
-        this.setElementText('overloadedTasks', kpis.overloaded || '0');
-        this.setElementText('investmentTasks', kpis.investment || '0');
-        this.setElementText('expenseTasks', kpis.expense || '0');
+        // Note: Task KPI cards removed from UI per user request
+        // Keeping function for backwards compatibility
+        // this.setElementText('totalTasks', kpis.total || '-');
+        // this.setElementText('overloadedTasks', kpis.overloaded || '0');
+        // this.setElementText('investmentTasks', kpis.investment || '0');
+        // this.setElementText('expenseTasks', kpis.expense || '0');
     }
 
     /**
