@@ -1061,8 +1061,8 @@ export class UIRenderer {
             return;
         }
 
-        container.innerHTML = tasks.map(task => `
-            <div class="task-card" data-task-name="${this.escapeHtml(task.name)}">
+        container.innerHTML = tasks.map((task, index) => `
+            <div class="task-card" data-task-index="${index}">
                 <div class="task-card-header">
                     <div class="task-card-title">${this.escapeHtml(task.name)}</div>
                     <div class="task-card-hours">${this.formatNumber(task.totalHours)}</div>
@@ -1085,11 +1085,11 @@ export class UIRenderer {
         `).join('');
 
         // Add click event listeners to all task cards
-        container.querySelectorAll('.task-card').forEach(card => {
+        container.querySelectorAll('.task-card').forEach((card, index) => {
             card.addEventListener('click', () => {
-                const taskName = card.getAttribute('data-task-name');
-                if (taskName && window.app) {
-                    window.app.showTaskModal(taskName);
+                const task = tasks[index];
+                if (task && window.app) {
+                    window.app.showTaskModal(task.name);
                 }
             });
         });
