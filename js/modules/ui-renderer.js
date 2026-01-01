@@ -1062,7 +1062,7 @@ export class UIRenderer {
         }
 
         container.innerHTML = tasks.map(task => `
-            <div class="task-card" onclick="window.app && window.app.showTaskModal('${this.escapeHtml(task.name)}')">
+            <div class="task-card" data-task-name="${this.escapeHtml(task.name)}">
                 <div class="task-card-header">
                     <div class="task-card-title">${this.escapeHtml(task.name)}</div>
                     <div class="task-card-hours">${this.formatNumber(task.totalHours)}</div>
@@ -1083,6 +1083,16 @@ export class UIRenderer {
                 </div>
             </div>
         `).join('');
+
+        // Add click event listeners to all task cards
+        container.querySelectorAll('.task-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const taskName = card.getAttribute('data-task-name');
+                if (taskName && window.app) {
+                    window.app.showTaskModal(taskName);
+                }
+            });
+        });
     }
 
     /**
