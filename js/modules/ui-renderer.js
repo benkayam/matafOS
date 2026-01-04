@@ -19,6 +19,40 @@ export class UIRenderer {
     }
 
     /**
+     * Show Toast Notification
+     * @param {String} message - Message to display
+     * @param {String} type - 'info', 'success', 'error'
+     */
+    showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type === 'success' ? 'toast-success' : type === 'error' ? 'toast-error' : ''}`;
+
+        let icon = 'ℹ️';
+        if (type === 'success') icon = '✅';
+        if (type === 'error') icon = '⚠️';
+
+        toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+
+        document.body.appendChild(toast);
+
+        // Trigger reflow
+        toast.offsetHeight;
+
+        // Show
+        requestAnimationFrame(() => {
+            toast.classList.add('show');
+        });
+
+        // Hide and remove after 3s
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 3000);
+    }
+
+    /**
      * Initialize UI handlers
      */
     init() {
@@ -39,6 +73,10 @@ export class UIRenderer {
                 this.switchTab(tab);
             });
         });
+
+        // Restore active tab from storage or default to 'employees'
+        const savedTab = localStorage.getItem('activeTab') || 'employees';
+        this.switchTab(savedTab);
     }
 
     /**
@@ -46,6 +84,7 @@ export class UIRenderer {
      */
     switchTab(tabName) {
         this.currentTab = tabName;
+        localStorage.setItem('activeTab', tabName);
 
         // Update buttons
         document.querySelectorAll('.tab-button').forEach(btn => {
@@ -60,7 +99,7 @@ export class UIRenderer {
         // Show/hide KPI cards based on tab
         const kpiEmployeesCard = document.getElementById('kpiEmployeesCard');
         const kpiTotalHoursCard = document.getElementById('kpiTotalHoursCard');
-        
+
         if (kpiEmployeesCard && kpiTotalHoursCard) {
             if (tabName === 'requirements' || tabName === 'hours') {
                 // Hide these cards in requirements and tasks (hours) tabs
@@ -116,7 +155,7 @@ export class UIRenderer {
             th.addEventListener('click', () => {
                 const column = th.dataset.sort;
                 const table = th.closest('table').id;
-                
+
                 // Toggle direction
                 if (this.sortColumn === column) {
                     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -241,7 +280,7 @@ export class UIRenderer {
         if (!taskMatrix || taskMatrix.length === 0) {
             container.innerHTML = `
                 <div class="empty-message" style="padding: 60px;">
-                    <i class="fas fa-th-large" style="font-size: 2em; margin-bottom: 12px; opacity: 0.5;"></i>
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px; opacity: 0.5;"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                     <div>אין נתוני משימות להצגה</div>
                 </div>
             `;
@@ -250,17 +289,17 @@ export class UIRenderer {
 
         container.innerHTML = taskMatrix.map((task, index) => {
             // Color by employee count
-            const tileClass = task.employeeCount >= 4 ? 'tile-red' : 
-                              task.employeeCount >= 2 ? 'tile-yellow' : 
-                              'tile-green';
-            
+            const tileClass = task.employeeCount >= 4 ? 'tile-red' :
+                task.employeeCount >= 2 ? 'tile-yellow' :
+                    'tile-green';
+
             // Icon by type
-            const typeIcon = task.type === 'השקעה' ? '💰' : 
-                            task.type === 'הוצאה' ? '💸' : '';
+            const typeIcon = task.type === 'השקעה' ? '💰' :
+                task.type === 'הוצאה' ? '💸' : '';
 
             // Truncate name if too long
-            const displayName = task.name.length > 40 
-                ? task.name.substring(0, 37) + '...' 
+            const displayName = task.name.length > 40
+                ? task.name.substring(0, 37) + '...'
                 : task.name;
 
             return `
@@ -315,7 +354,7 @@ export class UIRenderer {
                 employeeCell.style.cursor = 'pointer';
                 employeeCell.style.textDecoration = 'underline';
                 employeeCell.style.color = 'var(--primary-blue-dark)';
-                
+
                 employeeCell.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const employeeId = row.dataset.employeeId;
@@ -325,6 +364,177 @@ export class UIRenderer {
                     }
                 });
             }
+        });
+    }
+
+    /**
+     * Render Requirements KPIs
+     */
+    renderRequirementsKPIs(kpis) {
+        const container = document.getElementById('requirementsKpiContainer');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="card summary-card">
+                <div class="card-content">
+                    <h3>Active</h3>
+                    <div class="card-value">${this.formatNumber(kpis.activeCount)}</div>
+                    <div class="card-subvalue">דרישות פעילות</div>
+                </div>
+            </div>
+            <div class="card summary-card">
+                <div class="card-content">
+                    <h3>Done</h3>
+                    <div class="card-value text-success">${this.formatNumber(kpis.doneCount)}</div>
+                    <div class="card-subvalue">דרישות שהושלמו</div>
+                </div>
+            </div>
+            <div class="card summary-card">
+                <div class="card-content">
+                    <h3>חריגה</h3>
+                    <div class="card-value text-danger" style="color: var(--fibi-error);">${this.formatNumber(kpis.overbudgetCount)}</div>
+                    <div class="card-subvalue">דרישות בחריגה</div>
+                </div>
+            </div>
+            <div class="card summary-card">
+                <div class="card-content">
+                    <h3>יתרות Done</h3>
+                    <div class="card-value">${this.formatNumber(kpis.doneWithBudgetCount)}</div>
+                    <div class="card-subvalue text-success">${this.formatCurrency(kpis.totalDoneRemainder)}</div>
+                </div>
+            </div>
+            <div class="card summary-card">
+                <div class="card-content">
+                    <h3>ניצול 90-100%</h3>
+                    <div class="card-value text-warning">${this.formatNumber(kpis.highUtilizationCount)}</div>
+                    <div class="card-subvalue">${this.formatCurrency(kpis.totalHighUtilizationRemainder)}</div>
+                </div>
+            </div>
+            <div class="card summary-card">
+                <div class="card-content">
+                    <h3>שיאן הדרישות</h3>
+                    <div class="card-value" style="font-size: 18px;">${this.escapeHtml(kpis.topRequester.name)}</div>
+                    <div class="card-subvalue">${kpis.topRequester.count} דרישות</div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Update Exceptions KPI in Employees Tab
+     */
+    updateExceptionsKPI(count) {
+        const container = document.getElementById('employeesKpiContainer');
+        if (!container) return;
+
+        // Check if exists, else create
+        let kpi = document.getElementById('kpiExceptionsCard');
+        if (!kpi) {
+            kpi = document.createElement('div');
+            kpi.id = 'kpiExceptionsCard';
+            kpi.className = 'card summary-card clickable-kpi';
+            kpi.style.border = '1px solid var(--fibi-error)'; // Red border hint
+            kpi.onclick = () => window.app && window.app.showExceptions();
+
+            // Insert at the end
+            container.appendChild(kpi);
+        }
+
+        kpi.innerHTML = `
+            <div class="card-content">
+                <h3 style="color: var(--fibi-error);">חריגות דיווח</h3>
+                <div class="card-value text-danger" style="color: var(--fibi-error);">${count}</div>
+                <div class="card-subvalue">עובדים בחריגה</div>
+            </div>
+        `;
+
+        // Show/Hide based on count
+        if (count > 0) {
+            kpi.style.display = 'flex';
+        } else {
+            kpi.style.display = 'none';
+        }
+    }
+
+    /**
+     * Show Exceptions Modal
+     */
+    showExceptionsModal(exceptions) {
+        // Create export buttons (Now with HTML ID)
+        const exportButtons = this.modalManager.createExportButtons('exportExceptionsExcel', 'exportExceptionsPDF', 'exportExceptionsHTML');
+
+        const content = `
+            ${exportButtons}
+            <div class="table-container">
+                <table class="data-table" id="exceptionsTable">
+                    <thead>
+                        <tr>
+                            ${(() => {
+                // 1. Collect all unique keys
+                const allKeys = new Set();
+                exceptions.forEach(row => Object.keys(row).forEach(k => allKeys.add(k)));
+
+                // 2. Define priority columns (Hebrew & English)
+                const priority = ['שם', 'עובד', 'Name', 'Employee', 'מספר', 'ID', 'תאריך', 'Date', 'חריגה', 'הודעה', 'Exception', 'Message'];
+
+                // 3. Sort keys
+                const sortedKeys = Array.from(allKeys).sort((a, b) => {
+                    const aIndex = priority.findIndex(p => a.includes(p));
+                    const bIndex = priority.findIndex(p => b.includes(p));
+
+                    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+                    if (aIndex !== -1) return -1;
+                    if (bIndex !== -1) return 1;
+                    return a.localeCompare(b, 'he');
+                });
+
+                // Store for body rendering
+                this._lastExceptionKeys = sortedKeys;
+
+                return sortedKeys.map(key => `<th>${this.escapeHtml(key)}</th>`).join('');
+            })()}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${exceptions.map(row => `
+                            <tr>
+                                ${this._lastExceptionKeys.map(key => {
+                let val = row[key];
+                if (val && (key.includes('תאריך') || key.includes('Date'))) {
+                    val = this.formatSheetDate(val);
+                }
+                return `<td>${this.escapeHtml(val || '')}</td>`;
+            }).join('')}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        this.modalManager.showModal('employeeListModal', content);
+
+        // Hack to set title since using generic modal
+        const titleEl = document.getElementById('employeeListModalTitle');
+        if (titleEl) titleEl.textContent = `חריגות דיווח (${exceptions.length})`;
+
+        // Setup export handlers
+        // Prepare columns for PDF export (Fix for missing names)
+        const pdfColumns = this._lastExceptionKeys ? this._lastExceptionKeys.map(key => ({
+            header: key,
+            dataKey: key
+        })) : [];
+
+        this.modalManager.setupExportHandlers({
+            excelButtonId: 'exportExceptionsExcel',
+            pdfButtonId: 'exportExceptionsPDF',
+            htmlButtonId: 'exportExceptionsHTML',
+            tableId: 'exceptionsTable',
+            data: exceptions,
+            columns: pdfColumns, // FORCE generic PDF export
+            title: 'חריגות דיווח',
+            filename: 'exceptions-report',
+            exporter: window.app && window.app.exporter
         });
     }
 
@@ -353,13 +563,13 @@ export class UIRenderer {
             // Find original index in full data for modal
             const originalIndex = this.requirementsData.findIndex(r => r.id === row.id);
             const dataIndex = originalIndex >= 0 ? originalIndex : index;
-            
+
             const remaining = row.budget - row.actual;
-            const utilizationClass = row.utilization > 100 ? 'text-danger' : 
-                                    row.utilization > 90 ? 'text-warning' : 
-                                    'text-success';
+            const utilizationClass = row.utilization > 100 ? 'text-danger' :
+                row.utilization > 90 ? 'text-warning' :
+                    'text-success';
             const remainingClass = remaining < 0 ? 'text-danger' : '';
-            
+
             return `
                 <tr class="requirement-row" data-index="${dataIndex}" style="cursor: pointer;">
                     <td class="number-cell req-id">${this.escapeHtml(row.id)}</td>
@@ -374,7 +584,7 @@ export class UIRenderer {
 
         // Add click handlers to rows
         this.setupRequirementRowClicks();
-        
+
         // Update filter counts - always use full data
         this.updateRequirementsFilterCounts();
     }
@@ -436,7 +646,7 @@ export class UIRenderer {
         }
 
         const counts = window.app.dataProcessor.getRequirementsFilterCounts();
-        
+
         // Update all counts
         this.setElementText('filterCountAll', counts.all || 0);
         this.setElementText('filterCountActive', counts.active || 0);
@@ -466,7 +676,7 @@ export class UIRenderer {
         // Requirement modal
         const requirementModal = document.getElementById('requirementModal');
         const closeRequirementBtn = document.getElementById('closeRequirementModal');
-        
+
         if (closeRequirementBtn) {
             closeRequirementBtn.addEventListener('click', () => {
                 this.hideRequirementModal();
@@ -484,7 +694,7 @@ export class UIRenderer {
         // Employee modal
         const employeeModal = document.getElementById('employeeModal');
         const closeEmployeeBtn = document.getElementById('closeEmployeeModal');
-        
+
         if (closeEmployeeBtn) {
             closeEmployeeBtn.addEventListener('click', () => {
                 this.hideEmployeeModal();
@@ -502,7 +712,7 @@ export class UIRenderer {
         // Employee List modal
         const employeeListModal = document.getElementById('employeeListModal');
         const closeEmployeeListBtn = document.getElementById('closeEmployeeListModal');
-        
+
         if (closeEmployeeListBtn) {
             closeEmployeeListBtn.addEventListener('click', () => {
                 this.hideEmployeeListModal();
@@ -539,24 +749,24 @@ export class UIRenderer {
     showRequirementModal(requirement) {
         const modal = document.getElementById('requirementModal');
         const modalBody = document.getElementById('requirementModalBody');
-        
+
         if (!modal || !modalBody) return;
 
         const remaining = requirement.budget - requirement.actual;
-        const utilizationClass = requirement.utilization > 100 ? 'text-danger' : 
-                                requirement.utilization > 90 ? 'text-warning' : 
-                                'text-success';
+        const utilizationClass = requirement.utilization > 100 ? 'text-danger' :
+            requirement.utilization > 90 ? 'text-warning' :
+                'text-success';
         const remainingClass = remaining < 0 ? 'text-danger' : '';
 
         // Get all raw data fields
         const rawData = requirement.raw || {};
         const allFields = Object.keys(rawData);
 
-        const exportButtons = this.modalManager.createExportButtons('exportRequirementExcel', 'exportRequirementPDF');
-        
+        const exportButtons = this.modalManager.createExportButtons('exportRequirementExcel', 'exportRequirementPDF', 'exportRequirementHTML');
+
         modalBody.innerHTML = `
             ${exportButtons}
-            <div class="requirement-details">
+            <div class="requirement-details" id="requirementDetailsContent">
                 <div class="detail-section">
                     <h3>מידע בסיסי</h3>
                     <div class="detail-grid">
@@ -604,42 +814,42 @@ export class UIRenderer {
                     <h3>פרטים נוספים</h3>
                     <div class="detail-grid">
                         ${allFields.map(key => {
-                            const value = rawData[key];
-                            if (value === null || value === undefined || value === '') return '';
-                            
-                            // Skip already displayed fields
-                            const displayedKeys = ['מספר דרישה', 'נושא', 'דורש הדרישה', 'תקציב שנתי', 'ביצוע כולל בקשות רכש פתוחות'];
-                            if (displayedKeys.some(k => key.includes(k))) return '';
+            const value = rawData[key];
+            if (value === null || value === undefined || value === '') return '';
 
-                            let displayValue = value;
-                            if (typeof value === 'number') {
-                                // Check if it's a currency value
-                                if (key.toLowerCase().includes('תקציב') || key.toLowerCase().includes('ביצוע') || 
-                                    key.toLowerCase().includes('יתרה') || key.toLowerCase().includes('עלות')) {
-                                    displayValue = this.formatCurrency(value);
-                                } else if (key.toLowerCase().includes('אחוז') || key.toLowerCase().includes('%')) {
-                                    displayValue = this.formatNumber(value) + '%';
-                                } else {
-                                    displayValue = this.formatNumber(value);
-                                }
-                            } else {
-                                displayValue = this.escapeHtml(String(value));
-                            }
+            // Skip already displayed fields
+            const displayedKeys = ['מספר דרישה', 'נושא', 'דורש הדרישה', 'תקציב שנתי', 'ביצוע כולל בקשות רכש פתוחות'];
+            if (displayedKeys.some(k => key.includes(k))) return '';
 
-                            return `
+            let displayValue = value;
+            if (typeof value === 'number') {
+                // Check if it's a currency value
+                if (key.toLowerCase().includes('תקציב') || key.toLowerCase().includes('ביצוע') ||
+                    key.toLowerCase().includes('יתרה') || key.toLowerCase().includes('עלות')) {
+                    displayValue = this.formatCurrency(value);
+                } else if (key.toLowerCase().includes('אחוז') || key.toLowerCase().includes('%')) {
+                    displayValue = this.formatNumber(value) + '%';
+                } else {
+                    displayValue = this.formatNumber(value);
+                }
+            } else {
+                displayValue = this.escapeHtml(String(value));
+            }
+
+            return `
                                 <div class="detail-item">
                                     <span class="detail-label">${this.escapeHtml(key)}:</span>
                                     <span class="detail-value">${displayValue}</span>
                                 </div>
                             `;
-                        }).filter(Boolean).join('')}
+        }).filter(Boolean).join('')}
                     </div>
                 </div>
                 ` : ''}
             </div>
         `;
 
-        // Setup export handlers using ModalManager
+        // Setup export handlers using ModalManager (mostly manual for specific requirements data)
         const requirementData = {
             'מספר דרישה': requirement.id || '',
             'נושא': requirement.name || '',
@@ -651,24 +861,82 @@ export class UIRenderer {
             'סטטוס': requirement.status || ''
         };
 
-        this.modalManager.setupExportHandlers({
-            excelButtonId: 'exportRequirementExcel',
-            pdfButtonId: 'exportRequirementPDF',
-            data: requirementData,
-            columns: [
-                { header: 'מספר דרישה', dataKey: 'מספר דרישה' },
-                { header: 'נושא', dataKey: 'נושא' },
-                { header: 'דורש', dataKey: 'דורש' },
-                { header: 'תקציב שנתי', dataKey: 'תקציב שנתי' },
-                { header: 'הוצאה בפועל', dataKey: 'הוצאה בפועל' },
-                { header: 'יתרה', dataKey: 'יתרה' },
-                { header: 'ניצול תקציב', dataKey: 'ניצול תקציב' },
-                { header: 'סטטוס', dataKey: 'סטטוס' }
-            ],
-            title: `פרטי דרישה - ${requirement.id}`,
-            filename: `requirement-${requirement.id}`,
-            exporter: window.app && window.app.exporter
-        });
+        // Standard setup for HTML export - needs an ID for the container to copy
+        // Since we want to copy the visual details, we can't easily use table copy. 
+        // HTML export for detailed view might be tricky with current implementation that expects a table.
+        // BUT user asked for unified logice. 
+        // Let's defer HTML export for this specific modal to "Screenshot -> PDF" style or skip HTML copy if not tabular?
+        // Actually the user said "anywhere you have export". 
+        // The implementation in exporter.js `exportToHTMLClipboard` expects a table ID. 
+        // This view is NOT a table. 
+        // We will adapt `exportToHTMLClipboard` or creating a hidden table? 
+        // Or we can just let PDF handle the visual export. 
+        // Let's implement HTML export by creating a temporary table or trying to copy the DIV innerHTML if the tool allows?
+        // The `exportToHTMLClipboard` specifically looks for a table and clones it. 
+        // Let's update `setupExportHandlers` to handle manual click for HTML or pass a valid ID.
+
+        // Manual override for specific logic
+        const excelBtn = document.getElementById('exportRequirementExcel');
+        const pdfBtn = document.getElementById('exportRequirementPDF');
+        const htmlBtn = document.getElementById('exportRequirementHTML');
+
+        if (excelBtn) {
+            excelBtn.onclick = () => {
+                if (window.app && window.app.exporter) {
+                    window.app.exporter.exportToExcel([requirementData], `requirement-${requirement.id}`, `פרטי דרישה - ${requirement.id}`);
+                }
+            };
+        }
+
+        if (pdfBtn) {
+            pdfBtn.onclick = () => {
+                if (window.app && window.app.exporter) {
+                    // Screenshot export (Print what is on screen)
+                    const contentToCapture = modal.querySelector('.requirement-details') || modalBody;
+                    window.app.exporter.exportElementToPDF(contentToCapture, `requirement-${requirement.id}`);
+                }
+            };
+        }
+
+        if (htmlBtn) {
+            htmlBtn.onclick = () => {
+                // Since this isn't a table, we can't use the standard table export. 
+                // We'll notify the user or try to copy text. 
+                // Actually, let's just copy the details as text/html
+                if (window.app && window.app.uiRenderer) {
+                    // Fallback/Custom implementation for non-table HTML copy could go here
+                    // For now, let's show a toast that it's only for tables or implement a basic text copy
+                    // Or better: construct a small HTML table string and put it in clipboard?
+                    // Let's try to capture the DIV.
+                    const detailsDiv = document.getElementById('requirementDetailsContent');
+                    if (detailsDiv && window.app.exporter) {
+                        // We can't use exportToHTMLClipboard because it expects a TABLE.
+                        // Let's just create a temporary Toast saying it's supported for lists only?
+                        // OR we implement a div-to-clipboard.
+                        // Given the instruction "copy logic... everywhere", best effort is to copy the visual part.
+                        // Let's rely on standard copy or a new exporter method? 
+                        // I will stick to PDF/Excel for this non-tabular view for now, effectively hiding or disabling HTML btn if I can't support it?
+                        // User requirement: "All tables...". This is a detail view, not a table.
+                        // I will add the button but maybe it copies the parsed data as value-key pairs?
+
+                        // Let's make a temporary table for the clipboard
+                        const tempTable = document.createElement('table');
+                        tempTable.id = 'tempReqTable';
+                        tempTable.style.display = 'none';
+                        tempTable.innerHTML = `
+                            <thead><tr><th>שדה</th><th>ערך</th></tr></thead>
+                            <tbody>
+                                ${Object.keys(requirementData).map(k => `<tr><td>${k}</td><td>${requirementData[k]}</td></tr>`).join('')}
+                            </tbody>
+                        `;
+                        document.body.appendChild(tempTable);
+                        window.app.exporter.exportToHTMLClipboard(tempTable.id).then(() => {
+                            document.body.removeChild(tempTable);
+                        });
+                    }
+                }
+            };
+        }
 
         modal.style.display = 'flex';
     }
@@ -689,7 +957,7 @@ export class UIRenderer {
     showEmployeeModal(employeeIdOrName) {
         const modal = document.getElementById('employeeModal');
         const modalBody = document.getElementById('employeeModalBody');
-        
+
         if (!modal || !modalBody) return;
 
         if (!window.app || !window.app.dataProcessor) {
@@ -698,7 +966,7 @@ export class UIRenderer {
         }
 
         const employee = window.app.dataProcessor.getEmployeeDetails(employeeIdOrName);
-        
+
         if (!employee) {
             console.warn('Employee not found:', employeeIdOrName);
             return;
@@ -707,18 +975,18 @@ export class UIRenderer {
         // Use pre-calculated percentages
         const investmentPercent = employee.investmentPercent || 0;
         const expensePercent = employee.expensePercent || 0;
-        const absencePercent = employee.totalHours > 0 
-            ? (employee.absenceHours / employee.totalHours) * 100 
+        const absencePercent = employee.totalHours > 0
+            ? (employee.absenceHours / employee.totalHours) * 100
             : 0;
 
         const invClass = this.getPercentClass('investment', investmentPercent);
         const expClass = this.getPercentClass('expense', expensePercent);
 
-        const exportButtons = this.modalManager.createExportButtons('exportEmployeeModalExcel', 'exportEmployeeModalPDF');
-        
+        const exportButtons = this.modalManager.createExportButtons('exportEmployeeModalExcel', 'exportEmployeeModalPDF', 'exportEmployeeModalHTML');
+
         modalBody.innerHTML = `
             ${exportButtons}
-            <div class="requirement-details">
+            <div class="requirement-details" id="employeeDetailsContent">
                 <div class="detail-section">
                     <h3>מידע בסיסי</h3>
                     <div class="detail-grid">
@@ -824,29 +1092,51 @@ export class UIRenderer {
             'תאריך אחרון': employee.lastDate || ''
         };
 
-        this.modalManager.setupExportHandlers({
-            excelButtonId: 'exportEmployeeModalExcel',
-            pdfButtonId: 'exportEmployeeModalPDF',
-            data: employeeData,
-            columns: [
-                { header: 'שם עובד', dataKey: 'שם עובד' },
-                { header: 'מספר עובד', dataKey: 'מספר עובד' },
-                { header: 'סוג עובד', dataKey: 'סוג עובד' },
-                { header: 'סה"כ שעות', dataKey: 'סה"כ שעות' },
-                { header: 'שעות השקעה', dataKey: 'שעות השקעה' },
-                { header: 'אחוז השקעה', dataKey: 'אחוז השקעה' },
-                { header: 'שעות הוצאה', dataKey: 'שעות הוצאה' },
-                { header: 'אחוז הוצאה', dataKey: 'אחוז הוצאה' },
-                { header: 'שעות היעדרות', dataKey: 'שעות היעדרות' },
-                { header: 'מספר דרישות', dataKey: 'מספר דרישות' },
-                { header: 'ימי עבודה', dataKey: 'ימי עבודה' },
-                { header: 'תאריך ראשון', dataKey: 'תאריך ראשון' },
-                { header: 'תאריך אחרון', dataKey: 'תאריך אחרון' }
-            ],
-            title: `פרטי עובד - ${employee.name || ''}`,
-            filename: `employee-${employee.id || employee.name || 'details'}`,
-            exporter: window.app && window.app.exporter
-        });
+        // Setup export handlers manually to use vertical details export for PDF
+        const excelBtn = document.getElementById('exportEmployeeModalExcel');
+        const pdfBtn = document.getElementById('exportEmployeeModalPDF');
+        const htmlBtn = document.getElementById('exportEmployeeModalHTML');
+
+        if (excelBtn) {
+            excelBtn.onclick = () => {
+                if (window.app && window.app.exporter) {
+                    window.app.exporter.exportEmployeesToExcel([employee], `employee-${employee.id || 'details'}`);
+                }
+            };
+        }
+
+        if (pdfBtn) {
+            pdfBtn.onclick = () => {
+                if (window.app && window.app.exporter) {
+                    // Use vertical layout export
+                    window.app.exporter.exportDetailsToPDF(employeeData, `פרטי עובד - ${employee.name || ''}`, `employee-${employee.id || 'details'}`);
+                }
+            };
+        }
+
+        if (htmlBtn) {
+            htmlBtn.onclick = () => {
+                if (window.app && window.app.exporter) {
+                    // Create temp table for basic stats
+                    const tempTable = document.createElement('table');
+                    tempTable.id = 'tempEmpTable';
+                    tempTable.style.display = 'none';
+                    tempTable.innerHTML = `
+                         <thead><tr><th>שדה</th><th>ערך</th></tr></thead>
+                         <tbody>
+                            <tr><td>שם</td><td>${employee.name}</td></tr>
+                            <tr><td>סה"כ שעות</td><td>${this.formatNumber(employee.totalHours)}</td></tr>
+                            <tr><td>% השקעה</td><td>${this.formatNumber(investmentPercent)}%</td></tr>
+                             <tr><td>% הוצאה</td><td>${this.formatNumber(expensePercent)}%</td></tr>
+                         </tbody>
+                    `;
+                    document.body.appendChild(tempTable);
+                    window.app.exporter.exportToHTMLClipboard(tempTable.id).then(() => {
+                        document.body.removeChild(tempTable);
+                    });
+                }
+            };
+        }
 
         modal.style.display = 'flex';
     }
@@ -868,7 +1158,7 @@ export class UIRenderer {
         const modal = document.getElementById('employeeListModal');
         const modalTitle = document.getElementById('employeeListModalTitle');
         const modalBody = document.getElementById('employeeListModalBody');
-        
+
         if (!modal || !modalBody) return;
 
         // Set title
@@ -877,7 +1167,7 @@ export class UIRenderer {
         }
 
         // Build content using ModalManager
-        const exportButtons = this.modalManager.createExportButtons('exportEmployeeListExcel', 'exportEmployeeListPDF');
+        const exportButtons = this.modalManager.createExportButtons('exportEmployeeListExcel', 'exportEmployeeListPDF', 'exportEmployeeListHTML');
         const tableHTML = `
             <div class="table-container">
                 <table class="data-table" id="employeeListTable">
@@ -913,6 +1203,8 @@ export class UIRenderer {
         this.modalManager.setupExportHandlers({
             excelButtonId: 'exportEmployeeListExcel',
             pdfButtonId: 'exportEmployeeListPDF',
+            htmlButtonId: 'exportEmployeeListHTML',
+            tableId: 'employeeListTable',
             data: employees,
             title: title,
             filename: title.replace(/\s+/g, '-'),
@@ -947,15 +1239,15 @@ export class UIRenderer {
         tbody.innerHTML = data.map(emp => {
             const investmentPercent = emp.investmentPercent || 0;
             const expensePercent = emp.expensePercent || 0;
-            
+
             return `
                 <tr class="employee-row" data-employee-id="${this.escapeHtml(emp.id || emp.name)}" style="cursor: pointer;">
                     <td style="color: var(--primary-blue-dark); font-weight: var(--font-weight-medium);">${this.escapeHtml(emp.name)}</td>
                     <td class="number-cell">${this.formatNumber(emp.totalHours)}</td>
                     <td class="number-cell ${this.getPercentClass('investment', investmentPercent)}">${this.formatNumber(investmentPercent)}%</td>
                     <td class="number-cell ${this.getPercentClass('expense', expensePercent)}">${this.formatNumber(expensePercent)}%</td>
-                    <td class="number-cell" style="text-align: center;">${emp.requirementCount || 0}</td>
-                    <td class="number-cell" style="text-align: center;">${emp.dayCount || 0}</td>
+                    <td class="number-cell">${emp.requirementCount || 0}</td>
+                    <td class="number-cell">${emp.dayCount || 0}</td>
                 </tr>
             `;
         }).join('');
@@ -995,8 +1287,8 @@ export class UIRenderer {
      */
     formatNumber(num) {
         if (num === null || num === undefined || isNaN(num)) return '-';
-        return new Intl.NumberFormat('he-IL', { 
-            maximumFractionDigits: 1 
+        return new Intl.NumberFormat('he-IL', {
+            maximumFractionDigits: 1
         }).format(num);
     }
 
@@ -1005,10 +1297,10 @@ export class UIRenderer {
      */
     formatCurrency(num) {
         if (num === null || num === undefined || isNaN(num)) return '-';
-        return new Intl.NumberFormat('he-IL', { 
-            style: 'currency', 
+        return new Intl.NumberFormat('he-IL', {
+            style: 'currency',
             currency: 'ILS',
-            maximumFractionDigits: 0 
+            maximumFractionDigits: 0
         }).format(num);
     }
 
@@ -1061,35 +1353,39 @@ export class UIRenderer {
             return;
         }
 
-        container.innerHTML = tasks.map((task, index) => `
-            <div class="task-card" data-task-index="${index}">
-                <div class="task-card-header">
-                    <div class="task-card-title">${this.escapeHtml(task.name)}</div>
-                    <div class="task-card-hours">${this.formatNumber(task.totalHours)}</div>
-                </div>
-                <div class="task-card-meta">
-                    <div class="task-card-employees">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                        </svg>
-                        <span>${task.employees.length} עובדים</span>
-                    </div>
-                    <span class="task-card-type ${task.type === 'השקעה' ? 'investment' : 'expense'}">
-                        ${task.type}
-                    </span>
-                </div>
+        container.innerHTML = tasks.map((task, index) => {
+            const typeClass = task.type === 'השקעה' ? 'investment' : 'expense';
+            return `
+        <div class="task-card ${typeClass}" data-task-index="${index}">
+            <div class="task-card-header">
+                <div class="task-card-title" title="${this.escapeHtml(task.name)}">${this.escapeHtml(task.name)}</div>
             </div>
-        `).join('');
+            
+            <div class="task-card-hours">${this.formatNumber(task.totalHours)}</div>
+            
+            <div class="task-card-meta">
+                <div class="task-card-employees">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>${task.employees.length}</span>
+                </div>
+                <span class="task-card-type ${typeClass}">
+                    ${task.type || 'אחר'}
+                </span>
+            </div>
+        </div>
+    `}).join('');
 
         // Add click event listeners to all task cards
         container.querySelectorAll('.task-card').forEach((card, index) => {
             card.addEventListener('click', () => {
                 const task = tasks[index];
                 if (task && window.app) {
-                    window.app.showTaskModal(task.name);
+                    window.app.showTaskModal(task);
                 }
             });
         });
@@ -1097,11 +1393,18 @@ export class UIRenderer {
 
     /**
      * Show task modal with employee details
+     * @param {string|Object} taskOrName - Task name or task object
      */
-    showTaskModal(taskName) {
-        const task = window.app.dataProcessor.getTaskByName(taskName);
+    showTaskModal(taskOrName) {
+        let task;
+        if (typeof taskOrName === 'string') {
+            task = window.app.dataProcessor.getTaskByName(taskOrName);
+        } else {
+            task = taskOrName;
+        }
+
         if (!task) {
-            console.error('Task not found:', taskName);
+            console.error('Task not found:', taskOrName);
             return;
         }
 
@@ -1114,10 +1417,10 @@ export class UIRenderer {
 
         // Create table
         const tableHTML = this.modalManager.createTable(headers, rows, 'taskEmployeesTable');
-        
-        // Create export buttons
-        const exportButtons = this.modalManager.createExportButtons('exportTaskExcel', 'exportTaskPDF');
-        
+
+        // Create export buttons (Standard with HTML)
+        const exportButtons = this.modalManager.createExportButtons('exportTaskExcel', 'exportTaskPDF', 'exportTaskHTML');
+
         // Update modal title with full path
         const modalTitle = document.getElementById('taskModalTitle');
         if (modalTitle) {
@@ -1140,18 +1443,52 @@ export class UIRenderer {
         // Show modal
         this.modalManager.showModal('taskModal', content);
 
-        // Setup export handlers
-        this.modalManager.setupExportHandlers(
-            'exportTaskExcel',
-            'exportTaskPDF',
-            () => window.app.exportTaskToExcel(task),
-            () => window.app.exportTaskToPDF(task)
-        );
+        // Define columns for generic PDF export
+        const pdfColumns = [
+            { header: 'עובד', dataKey: 'name' },
+            { header: 'שעות', dataKey: 'hours' }
+        ];
+
+        // Format data for generic export
+        const exportData = task.employees.map(emp => ({
+            name: emp.name,
+            hours: emp.hours // Exporter handles number formatting if needed, or we can pre-format
+        }));
+
+        // Setup export handlers using standard manager
+        this.modalManager.setupExportHandlers({
+            excelButtonId: 'exportTaskExcel',
+            pdfButtonId: 'exportTaskPDF',
+            htmlButtonId: 'exportTaskHTML',
+            tableId: 'taskEmployeesTable',
+            data: exportData,
+            columns: pdfColumns,
+            title: `פירוט משימה: ${task.name}`,
+            filename: `task-${task.name.replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, '_')}`,
+            exporter: window.app && window.app.exporter
+        });
 
         // Setup close handler for X button
         document.getElementById('closeTaskModal').onclick = () => {
             this.modalManager.hideModal('taskModal');
         };
+    }
+
+    /**
+     * Format Excel date
+     */
+    formatSheetDate(dateValue) {
+        if (!dateValue) return '';
+        if (typeof dateValue === 'number' && dateValue > 100) {
+            // Excel serial date
+            const date = new Date((dateValue - 25569) * 86400 * 1000);
+            return date.toLocaleDateString('he-IL');
+        }
+        if (typeof dateValue === 'string') {
+            const date = new Date(dateValue);
+            if (!isNaN(date.getTime())) return date.toLocaleDateString('he-IL');
+        }
+        return dateValue;
     }
 
     /**

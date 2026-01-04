@@ -31,7 +31,7 @@ export class GlobalSearch {
         this.searchInput.addEventListener('input', (e) => this.handleInput(e));
         this.searchInput.addEventListener('focus', () => this.handleFocus());
         this.searchInput.addEventListener('blur', () => this.handleBlur());
-        
+
         if (this.clearBtn) {
             this.clearBtn.addEventListener('click', () => this.clearSearch());
         }
@@ -95,11 +95,11 @@ export class GlobalSearch {
         if (!this.dataProcessor) return;
 
         const results = this.searchGlobal(query);
-        
-        // Show autocomplete suggestions
-        this.showAutocomplete();
-        this.renderAutocomplete(results.slice(0, 5)); // Top 5 suggestions
-        
+
+        // Hide autocomplete, show only full results
+        this.hideAutocomplete();
+        // this.renderAutocomplete(results.slice(0, 5)); 
+
         // Show full results
         this.renderResults(results);
     }
@@ -107,58 +107,103 @@ export class GlobalSearch {
     /**
      * Search across all data
      */
+    /**
+     * Search across all data
+     */
     searchGlobal(query) {
         const results = [];
         const queryLower = query.toLowerCase();
 
-        // Search employees
-        const employees = this.dataProcessor.getEmployeesArray();
+        // Track seen entities to avoid duplicates
+        const seenKeys = new Set();
+
+        /**
+         * Helper to check if any value in an object matches query
+         */
+        const matchesAny = (obj, fields) => {
+            if (!obj) return false;
+            // specific fields
+            if (fields) {
+                return fields.some(f => String(obj[f] || '').toLowerCase().includes(queryLower));
+            }
+            // or deep search in all values
+            return Object.values(obj).some(val =>
+                val && String(val).toLowerCase().includes(queryLower)
+            );
+        };
+
+        // 1. Search employees
+        const employees = this.dataProcessor.getEmployeesArray(true); // Skip filter
         employees.forEach(emp => {
-            const searchText = `${emp.name} ${emp.id} ${emp.type || ''}`.toLowerCase();
-            if (searchText.includes(queryLower)) {
-                results.push({
-                    type: 'employee',
-                    data: emp,
-                    name: emp.name,
-                    id: emp.id,
-                    meta: `${emp.type || ''} | ${emp.totalHours || 0} שעות`
-                });
+            // Search name, id, type, and any other relevant prop
+            if (matchesAny(emp, ['name', 'id', 'type', 'employeeType'])) {
+                const key = `employee|${emp.id}|${emp.name.trim()}`;
+                if (!seenKeys.has(key)) {
+                    seenKeys.add(key);
+                    results.push({
+                        type: 'employee',
+                        data: emp,
+                        name: emp.name,
+                        id: emp.id,
+                        meta: `${emp.type || ''} | ${emp.totalHours || 0} שעות`
+                    });
+                }
             }
         });
 
-        // Search requirements
+        // 2. Search requirements (Never filtered)
         const requirements = this.dataProcessor.getRequirements();
         requirements.forEach(req => {
-            const searchText = `${req.id} ${req.name} ${req.requester || ''}`.toLowerCase();
-            if (searchText.includes(queryLower)) {
-                results.push({
-                    type: 'requirement',
-                    data: req,
-                    name: req.name,
-                    id: req.id,
-                    meta: `${req.requester || ''} | ${req.budget || 0} ₪`
-                });
+            // Search core fields + check raw for any matches (comments, extra cols)
+            const coreMatch = matchesAny(req, ['id', 'name', 'requester', 'status']);
+            const rawMatch = req.raw ? matchesAny(req.raw) : false;
+
+            if (coreMatch || rawMatch) {
+                const key = `requirement|${req.id}|${req.name.trim()}`;
+                if (!seenKeys.has(key)) {
+                    seenKeys.add(key);
+                    results.push({
+                        type: 'requirement',
+                        data: req,
+                        name: req.name,
+                        id: req.id,
+                        meta: `${req.requester || ''} | ${req.budget || 0} ₪`
+                    });
+                }
             }
         });
 
-        // Search in hours data (tasks/subtasks)
-        const hoursData = this.dataProcessor.hoursData || [];
-        const uniqueTasks = new Set();
-        hoursData.forEach(row => {
-            const task = row.task || row['משימה'];
-            const subtask = row.subtask || row['תת משימה'];
-            const taskText = `${task} ${subtask}`.toLowerCase();
-            
-            if (taskText.includes(queryLower) && task) {
-                const key = `${task}|${subtask}`;
-                if (!uniqueTasks.has(key)) {
-                    uniqueTasks.add(key);
+        // 3. Search tasks (Aggregated)
+        const tasks = this.dataProcessor.getTasksGrouped(true); // Skip filter
+
+        tasks.forEach(task => {
+            // Check main task fields
+            const taskFields = ['name', 'fullPath', 'taskField', 'activity', 'subActivity', 'subSubActivity', 'type'];
+            let isMatch = matchesAny(task, taskFields);
+
+            // Check raw data if available (deep search)
+            if (!isMatch && task.raw) {
+                isMatch = matchesAny(task.raw);
+            }
+
+            // Also check if any employee associated with this task matches query
+            if (!isMatch && task.employees) {
+                isMatch = task.employees.some(emp =>
+                    String(emp.name || '').toLowerCase().includes(queryLower)
+                );
+            }
+
+            if (isMatch) {
+                // Strict deduplication by NAME only, ignoring whitespace.
+                const taskKey = `task|${task.name.trim()}`;
+                if (!seenKeys.has(taskKey)) {
+                    seenKeys.add(taskKey);
                     results.push({
                         type: 'task',
-                        data: { task, subtask, employee: row.employee },
-                        name: task,
-                        id: subtask || '',
-                        meta: `${row.employee || ''}`
+                        data: task,
+                        name: task.name,
+                        id: task.taskField || '',
+                        meta: `${task.employees.length} עובדים | ${task.totalHours} שעות`
                     });
                 }
             }
@@ -214,7 +259,7 @@ export class GlobalSearch {
             <div class="search-results-header">
                 נמצאו ${results.length} תוצאות
             </div>
-            <table class="search-results-table">
+            <table class="search-results-table" style="box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                 <thead>
                     <tr>
                         <th>סוג</th>
@@ -257,10 +302,7 @@ export class GlobalSearch {
         } else if (result.type === 'requirement') {
             this.uiRenderer.showRequirementModal(result.data);
         } else if (result.type === 'task') {
-            // For tasks, show the employee who worked on it
-            if (result.data.employee) {
-                this.uiRenderer.showEmployeeModal(result.data.employee);
-            }
+            this.uiRenderer.showTaskModal(result.data); // Open Task Details
         }
     }
 

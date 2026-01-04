@@ -1,3 +1,5 @@
+import { assistantFontBase64 } from './fonts.js';
+
 /**
  * ============================================
  * Export Module - Generic Excel & PDF Export
@@ -7,99 +9,7 @@
 
 export class Exporter {
     constructor() {
-        this.defaultFont = 'helvetica';
-    }
-
-    /**
-     * Create a temporary table element for PDF export
-     * This uses html2canvas to convert HTML to image, preserving Hebrew text
-     */
-    async createTableElement(data, columns, title) {
-        // Create a temporary container
-        const container = document.createElement('div');
-        container.style.cssText = `
-            position: fixed;
-            left: -9999px;
-            top: 0;
-            width: 1000px;
-            background: white;
-            padding: 40px;
-            font-family: Arial, sans-serif;
-            direction: rtl;
-        `;
-        
-        // Add title
-        const titleEl = document.createElement('h1');
-        titleEl.textContent = title;
-        titleEl.style.cssText = `
-            text-align: center;
-            color: #18285F;
-            margin-bottom: 30px;
-            font-size: 28px;
-        `;
-        container.appendChild(titleEl);
-        
-        // Create table
-        const table = document.createElement('table');
-        table.style.cssText = `
-            width: 100%;
-            border-collapse: collapse;
-            direction: rtl;
-        `;
-        
-        // Add header
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-        columns.forEach(col => {
-            const th = document.createElement('th');
-            th.textContent = col.header;
-            th.style.cssText = `
-                background: #18285F;
-                color: white;
-                padding: 12px;
-                text-align: right;
-                border: 1px solid #ddd;
-                font-weight: bold;
-            `;
-            headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        table.appendChild(thead);
-        
-        // Add body
-        const tbody = document.createElement('tbody');
-        data.forEach((row, index) => {
-            const tr = document.createElement('tr');
-            tr.style.background = index % 2 === 0 ? '#f9f9f9' : 'white';
-            
-            columns.forEach(col => {
-                const td = document.createElement('td');
-                td.textContent = row[col.dataKey] || '';
-                td.style.cssText = `
-                    padding: 10px 12px;
-                    text-align: right;
-                    border: 1px solid #ddd;
-                `;
-                tr.appendChild(td);
-            });
-            tbody.appendChild(tr);
-        });
-        table.appendChild(tbody);
-        container.appendChild(table);
-        
-        // Add date footer
-        const footer = document.createElement('div');
-        footer.textContent = `תאריך: ${new Date().toLocaleDateString('he-IL')}`;
-        footer.style.cssText = `
-            margin-top: 20px;
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-        `;
-        container.appendChild(footer);
-        
-        document.body.appendChild(container);
-        return container;
+        this.defaultFont = 'Assistant-Regular';
     }
 
     /**
@@ -110,7 +20,7 @@ export class Exporter {
      */
     exportToExcel(data, filename = 'export', sheetName = 'Sheet1') {
         if (!data || data.length === 0) {
-            alert('אין נתונים לייצוא');
+            this._showToast('אין נתונים לייצוא', 'error');
             return;
         }
 
@@ -124,11 +34,11 @@ export class Exporter {
 
             // Generate Excel file and download
             XLSX.writeFile(wb, `${filename}.xlsx`);
-            
+
             console.log(`✅ Exported ${data.length} rows to ${filename}.xlsx`);
         } catch (error) {
             console.error('❌ Excel export error:', error);
-            alert('שגיאה בייצוא לאקסל');
+            this._showToast('שגיאה בייצוא לאקסל', 'error');
         }
     }
 
@@ -140,7 +50,7 @@ export class Exporter {
     exportTableToExcel(tableId, filename = 'table-export') {
         const table = document.getElementById(tableId);
         if (!table) {
-            alert('טבלה לא נמצאה');
+            this._showToast('טבלה לא נמצאה', 'error');
             return;
         }
 
@@ -150,13 +60,12 @@ export class Exporter {
             console.log(`✅ Exported table ${tableId} to ${filename}.xlsx`);
         } catch (error) {
             console.error('❌ Table export error:', error);
-            alert('שגיאה בייצוא הטבלה');
+            this._showToast('שגיאה בייצוא הטבלה', 'error');
         }
     }
 
     /**
-     * Export data to PDF using html2canvas
-     * This method converts HTML to image, preserving Hebrew text perfectly
+     * Export data to PDF using jspdf-autotable
      * @param {Object} options - Export options
      * @param {Array} options.data - Array of objects
      * @param {Array} options.columns - Column definitions [{header: 'כותרת', dataKey: 'key'}]
@@ -172,74 +81,150 @@ export class Exporter {
         } = options;
 
         if (!data || data.length === 0) {
-            alert('אין נתונים לייצוא');
-            return;
-        }
-
-        if (!window.html2canvas) {
-            alert('ספריית html2canvas לא נטענה');
+            this._showToast('אין נתונים לייצוא', 'error');
             return;
         }
 
         if (!window.jspdf || !window.jspdf.jsPDF) {
-            alert('ספריית PDF לא נטענה');
+            this._showToast('ספריית PDF לא נטענה', 'error');
             return;
         }
 
-        let container = null;
-
         try {
-            // Create temporary table element
-            container = await this.createTableElement(data, columns, title);
-            
-            // Wait for fonts to load
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // Convert to canvas
-            const canvas = await html2canvas(container, {
-                scale: 2,
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: '#ffffff',
-                logging: false
-            });
-            
-            // Create PDF
-            const imgData = canvas.toDataURL('image/png');
             const { jsPDF } = window.jspdf;
-            
-            const imgWidth = 210; // A4 width in mm
-            const pageHeight = 297; // A4 height in mm
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            
-            const doc = new jsPDF('p', 'mm', 'a4');
-            let position = 0;
-            
-            // Add first page
-            doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-            
-            // Add additional pages if needed
-            while (heightLeft > 0) {
-                position = heightLeft - imgHeight;
-                doc.addPage();
-                doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
+            const doc = new jsPDF();
+
+            // Add Hebrew Font if not already added
+            if (!doc.getFontList()['Assistant']) {
+                doc.addFileToVFS('Assistant-Regular.ttf', assistantFontBase64);
+                doc.addFont('Assistant-Regular.ttf', 'Assistant', 'normal');
             }
-            
-            // Save PDF
-            doc.save(`${filename}.pdf`);
+            doc.setFont('Assistant');
+
+            // Add Title
+            doc.setFontSize(18);
+            doc.setTextColor(24, 40, 95); // #18285F
+
+            // Center title (manually since isRightToLeft covers text direction)
+            const pageWidth = doc.internal.pageSize.width;
+            doc.text(this._reverseHebrew(title), pageWidth / 2, 15, { align: 'center', isRightToLeft: false });
+
+            // Prepare columns and rows for autotable
+            // Reverse columns for RTL layout (Rightmost column first)
+            const tableColumns = [...columns].reverse().map(col => ({
+                header: this._reverseHebrew(col.header),
+                dataKey: col.dataKey
+            }));
+
+            // Prepare body data - ensure strings are handled
+            const tableBody = data.map(row => {
+                const newRow = {};
+                columns.forEach(col => {
+                    const val = row[col.dataKey] != null ? String(row[col.dataKey]) : '';
+                    newRow[col.dataKey] = this._reverseHebrew(val);
+                });
+                return newRow;
+            });
+
+            // Make sure autoTable is available
+            if (!doc.autoTable) {
+                console.error('AutoTable plugin not found');
+                this._showToast('רכיב טבלה לא נטען', 'error');
+                return;
+            }
+
+            // Generate Table
+            doc.autoTable({
+                columns: tableColumns,
+                body: tableBody,
+                startY: 25,
+                styles: {
+                    font: 'Assistant',
+                    fontStyle: 'normal',
+                    halign: 'right', // Align text to right for Hebrew
+                    fillColor: [255, 255, 255],
+                    textColor: [20, 20, 20],
+                    lineWidth: 0.1,
+                    lineColor: [221, 221, 221]
+                },
+                headStyles: {
+                    fillColor: [24, 40, 95], // #18285F
+                    textColor: [255, 255, 255],
+                    halign: 'right',
+                    fontStyle: 'normal' // Using normal because we only have regular font
+                },
+                alternateRowStyles: {
+                    fillColor: [249, 249, 249]
+                },
+                margin: { top: 25 },
+                theme: 'grid'
+            });
+
+            // Add Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            const dateStr = new Date().toLocaleDateString('he-IL');
+
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.text(this._reverseHebrew(`עמוד ${i} מתוך ${pageCount} | הופק בתאריך: ${dateStr}`), pageWidth / 2, doc.internal.pageSize.height - 10, {
+                    align: 'center',
+                    isRightToLeft: false
+                });
+            }
+
+            // Save PDF with compression
+            doc.save(`${filename}.pdf`, { compress: true });
             console.log(`✅ Exported ${data.length} rows to ${filename}.pdf`);
+
         } catch (error) {
             console.error('❌ PDF export error:', error);
-            alert('שגיאה בייצוא ל-PDF');
-        } finally {
-            // Clean up temporary element
-            if (container && container.parentNode) {
-                container.parentNode.removeChild(container);
-            }
+            this._showToast('שגיאה בייצוא ל-PDF', 'error');
         }
+    }
+
+    /**
+     * Helper to reverse Hebrew strings for visual RTL
+     * Handles mixed content and parentheses swapping
+     */
+    _reverseHebrew(str) {
+        if (!str) return '';
+        const s = String(str);
+
+        // If no Hebrew characters, return as is
+        if (!/[\u0590-\u05FF]/.test(s)) return s;
+
+        // Helper to swap parens
+        const swapParens = (term) => {
+            return term.split('').map(c => {
+                if (c === '(') return ')';
+                if (c === ')') return '(';
+                if (c === '[') return ']';
+                if (c === ']') return '[';
+                if (c === '{') return '}';
+                if (c === '}') return '{';
+                if (c === '<') return '>';
+                if (c === '>') return '<';
+                return c;
+            }).join('');
+        };
+
+        // Split by spaces to handle mixed words
+        return s.split(' ').reverse().map(word => {
+            // If word contains Hebrew, reverse characters AND swap parens
+            if (/[\u0590-\u05FF]/.test(word)) {
+                return swapParens(word.split('').reverse().join(''));
+            }
+
+            // If word is pure Number/English but contains parens (e.g. "(123)"), we need to swap parens
+            // but NOT reverse the text characters (to keep "123" reading as "123")
+            if (word.match(/[(){}[\]<>]/)) {
+                return swapParens(word);
+            }
+
+            return word;
+        }).join(' ');
     }
 
 
@@ -291,17 +276,17 @@ export class Exporter {
     }
 
     /**
-     * Export requirements to Excel
+     * Export requirements list to Excel
      */
     exportRequirementsToExcel(requirements, filename = 'requirements') {
         const data = requirements.map(req => ({
-            'מספר דרישה': req.id,
-            'שם דרישה': req.name,
-            'תקציב': req.budget,
-            'בפועל': req.actual,
-            'ניצול %': req.utilization.toFixed(1) + '%',
-            'סטטוס': req.status,
-            'דורש': req.requester
+            'מספר דרישה': req.id || '',
+            'שם דרישה': req.name || '',
+            'תקציב': req.budget || 0,
+            'בפועל': req.actual || 0,
+            'ניצול': (req.utilization || 0).toFixed(1) + '%',
+            'סטטוס': req.status || '',
+            'דורש': req.requester || ''
         }));
 
         this.exportToExcel(data, filename, 'דרישות');
@@ -377,5 +362,268 @@ export class Exporter {
         });
 
         this.exportToPDF({ data, columns, title, filename });
+    }
+
+    /**
+     * Export single object details to PDF (Vertical Layout)
+     * @param {Object} details - Key-Value pairs to print
+     * @param {String} title - Document title
+     * @param {String} filename - Output filename
+     */
+    async exportDetailsToPDF(details, title = 'פרטים', filename = 'details') {
+        if (!details || Object.keys(details).length === 0) {
+            this._showToast('אין נתונים לייצוא', 'error');
+            return;
+        }
+
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            this._showToast('ספריית PDF לא נטענה', 'error');
+            return;
+        }
+
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Add Hebrew Font
+            if (!doc.getFontList()['Assistant']) {
+                doc.addFileToVFS('Assistant-Regular.ttf', assistantFontBase64);
+                doc.addFont('Assistant-Regular.ttf', 'Assistant', 'normal');
+            }
+            doc.setFont('Assistant');
+
+            // Title
+            doc.setFontSize(18);
+            doc.setTextColor(24, 40, 95);
+            const pageWidth = doc.internal.pageSize.width;
+            doc.text(this._reverseHebrew(title), pageWidth / 2, 20, { align: 'center', isRightToLeft: false });
+
+            // Content
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+
+            let yPos = 40;
+            const rightMargin = 190;
+            const lineHeight = 10;
+
+            Object.entries(details).forEach(([key, value]) => {
+                // Prepare Key (always assumes Hebrew context)
+                const keyRev = this._reverseHebrew(key);
+                const stringVal = String(value);
+
+                // Prepare Value
+                // If value contains Hebrew, reverse it. If it's a number/date, keep LTR.
+                let valToDraw = stringVal;
+
+                // FIX: Remove Shekel symbol (₪) and replace with text suffix or just remove to prevent BIDI issues
+                if (valToDraw.includes('₪')) {
+                    valToDraw = valToDraw.replace('₪', '').trim();
+                    // Optional: Add 'NIS' or 'ש"ח' but ensure it doesn't break number flow. 
+                    // For now, let's keep it clean as just the number to guarantee correctness.
+                }
+
+                if (/[\u0590-\u05FF]/.test(stringVal)) {
+                    valToDraw = this._reverseHebrew(stringVal);
+                }
+
+                // Layout:
+                // [Value] ................. [Key] |Margin
+
+                // Draw Key aligned right at margin
+                doc.text(keyRev + ' :', rightMargin, yPos, { align: 'right', isRightToLeft: false });
+
+                // Calculate Key width to offset Value
+                // We use a fixed offset or dynamic? 
+                // Let's use a safe gap from the colon.
+                const keyWidth = doc.getTextWidth(keyRev + ' :');
+                const valueX = rightMargin - keyWidth - 2; // 2mm gap
+
+                // FIX: Check if we need to reverse value again (Double Reverse Check)
+                // If it's already mixed Hebrew, reverse it.
+                // But wait, exportDetailsToPDF is standalone and implements its own logic.
+                // It does NOT call exportToPDF.
+                // So keeping _reverseHebrew here IS correct for this specific method.
+                // I will NOT change this block, reverting content to original.
+                doc.text(valToDraw, valueX, yPos, { align: 'right', isRightToLeft: false });
+
+                // Check page break
+                if (yPos > 270) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+
+                yPos += lineHeight;
+            });
+
+            // Footer
+            const dateStr = new Date().toLocaleDateString('he-IL');
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text(this._reverseHebrew(`הופק בתאריך: ${dateStr}`), pageWidth / 2, 285, { align: 'center', isRightToLeft: false });
+
+            // Save
+            doc.save(`${filename}.pdf`, { compress: true });
+            console.log(`✅ Exported details to ${filename}.pdf`);
+
+        } catch (error) {
+            console.error('❌ PDF export details error:', error);
+            this._showToast('שגיאה בייצוא ל-PDF', 'error');
+        }
+    }
+
+    /**
+     * Export table to HTML Clipboard for Email
+     * @param {String} tableId - ID of the table element to copy
+     */
+    async exportToHTMLClipboard(tableId) {
+        const table = document.getElementById(tableId);
+        if (!table) {
+            alert('טבלה לא נמצאה');
+            return;
+        }
+
+        try {
+            // Visualize selection
+            const originalBorder = table.style.border;
+            table.style.border = '2px solid #18285F';
+
+            // Create a clean clone for email formatting
+            const clone = table.cloneNode(true);
+            clone.style.width = '100%';
+            clone.style.borderCollapse = 'collapse';
+            clone.style.fontFamily = 'Arial, sans-serif';
+            clone.style.direction = 'rtl';
+
+            // Style cells for email (inline styles are safer)
+            const cells = clone.querySelectorAll('th, td');
+            cells.forEach(cell => {
+                cell.style.border = '1px solid #dddddd';
+                cell.style.padding = '8px';
+                cell.style.textAlign = 'right';
+                if (cell.tagName === 'TH') {
+                    cell.style.backgroundColor = '#18285F';
+                    cell.style.color = '#ffffff';
+                }
+
+                // Fix negative numbers in RTL
+                const text = cell.innerText.trim();
+                // Check if text starts with '-' or contains it for currency/percent (e.g. "-50%")
+                // Simple check for negative value: starts with - and has digit
+                if (text.startsWith('-') || (text.includes('-') && /[0-9]/.test(text) && !/[a-zA-Z]/.test(text))) {
+                    cell.innerHTML = `<span style="direction: ltr; unicode-bidi: embed; display: inline-block;">${text}</span>`;
+                }
+            });
+
+            // Get HTML string
+            const htmlContent = clone.outerHTML;
+
+            // Restore original style
+            table.style.border = originalBorder;
+
+            // Copy to clipboard
+            // Use standard Clipboard API
+            const type = 'text/html';
+            const blob = new Blob([htmlContent], { type });
+            const data = [new ClipboardItem({ [type]: blob })];
+
+            await navigator.clipboard.write(data);
+
+            // Visual feedback
+            const btn = document.getElementById('modalExportHTML'); // Try to find the button
+            if (btn) {
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅';
+                setTimeout(() => btn.innerHTML = originalText, 1500);
+            }
+
+            this._showToast('הטבלה הועתקה ללוח! ניתן להדביק במייל (Ctrl+V)', 'success');
+
+        } catch (err) {
+            console.error('Failed to copy HTML: ', err);
+            // Fallback for some browsers
+            try {
+                // Select the table
+                const range = document.createRange();
+                range.selectNode(table);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+                window.getSelection().removeAllRanges();
+                this._showToast('הטבלה הועתקה ללוח!', 'success');
+            } catch (fallbackErr) {
+                this._showToast('שגיאה בהעתקה ללוח', 'error');
+            }
+        }
+    }
+
+    /**
+     * Helper to show toast via main app
+     */
+    _showToast(message, type = 'info') {
+        if (window.app && window.app.uiRenderer && window.app.uiRenderer.showToast) {
+            window.app.uiRenderer.showToast(message, type);
+        } else {
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+    }
+
+    /**
+     * Export DOM element to PDF (Screenshot)
+     * @param {HTMLElement} element - Element to capture
+     * @param {String} filename - Output filename
+     */
+    async exportElementToPDF(element, filename = 'export') {
+        if (!element) {
+            this._showToast('אלמנט לא נמצא', 'error');
+            return;
+        }
+
+        if (!window.html2canvas) {
+            this._showToast('ספריית html2canvas חסרה', 'error');
+            return;
+        }
+
+        try {
+            // Visualize that something is happening
+            document.body.style.cursor = 'wait';
+
+            const canvas = await window.html2canvas(element, {
+                useCORS: true,
+                scale: 2, // Better quality
+                backgroundColor: '#ffffff', // Ensure white background
+                logging: false
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+
+            const imgWidth = 210; // A4 width in mm
+            const pageHeight = 297; // A4 height in mm
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            // Handle multi-page if element is very long (basic implementation)
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight;
+                doc.addPage();
+                doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+
+            doc.save(`${filename}.pdf`);
+            document.body.style.cursor = 'default';
+
+        } catch (error) {
+            console.error('❌ PDF screenshot export error:', error);
+            document.body.style.cursor = 'default';
+            this._showToast('שגיאה בייצוא צילום מסך ל-PDF', 'error');
+        }
     }
 }

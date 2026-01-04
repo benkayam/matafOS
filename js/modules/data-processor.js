@@ -13,6 +13,7 @@ export class DataProcessor {
         this.requirementsData = [];
         this.processedHours = [];
         this.processedRequirements = [];
+        this.exceptionsData = []; // Store exceptions
         this.employeeSummary = {};
         this.teamFilter = null;
     }
@@ -29,13 +30,20 @@ export class DataProcessor {
      */
     updateData(type, data) {
         if (type === 'hours') {
-            this.hoursData = data;
+            // Handle new structure
+            if (data.rows) {
+                this.hoursData = data.rows;
+                this.exceptionsData = data.exceptions || [];
+            } else {
+                this.hoursData = data;
+                this.exceptionsData = [];
+            }
             this.processHours();
         } else if (type === 'requirements') {
             this.requirementsData = data;
             this.processRequirements();
         }
-        
+
         return this.getStats();
     }
 
@@ -52,24 +60,24 @@ export class DataProcessor {
             const employeeId = String(this.findColumn(row, CONFIG.HOURS_COLUMNS.EMPLOYEE_ID) || '');
             const classificationValue = this.findColumn(row, CONFIG.HOURS_COLUMNS.CLASSIFICATION) || '';
             const workType = this.classifyWorkType(classificationValue);
-            
+
             // Read employee type directly from Excel (with trim!)
             const employeeTypeRaw = this.findColumn(row, CONFIG.HOURS_COLUMNS.EMPLOYEE_TYPE) || '';
             const employeeType = this.normalizeEmployeeType(employeeTypeRaw);
-            
+
             // Read all task-related fields
             const subSubActivity = this.findColumn(row, CONFIG.HOURS_COLUMNS.SUB_SUB_ACTIVITY) || '';
             const subActivity = this.findColumn(row, CONFIG.HOURS_COLUMNS.SUB_ACTIVITY) || '';
             const activity = this.findColumn(row, CONFIG.HOURS_COLUMNS.ACTIVITY) || '';
             const taskField = this.findColumn(row, CONFIG.HOURS_COLUMNS.TASK) || '';
-            
+
             // Determine task name based on priority:
             // 1. If sub-sub-activity exists, use it
             // 2. Else if sub-activity exists, use it
             // 3. Else if activity exists, use it
             // 4. Else use task field
             const taskName = subSubActivity || subActivity || activity || taskField || 'ללא משימה';
-            
+
             return {
                 employee: this.findColumn(row, CONFIG.HOURS_COLUMNS.EMPLOYEE_NAME) || '',
                 employeeId: employeeId,
@@ -89,7 +97,7 @@ export class DataProcessor {
         }).filter(row => row.employee && row.hours > 0);
 
         // Filter excluded employees
-        this.processedHours = this.processedHours.filter(row => 
+        this.processedHours = this.processedHours.filter(row =>
             !CONFIG.EXCLUDED_EMPLOYEE_IDS.includes(row.employeeId)
         );
 
@@ -122,7 +130,7 @@ export class DataProcessor {
         this.processedRequirements = this.requirementsData.map(row => {
             const budgetRaw = this.findColumn(row, CONFIG.REQUIREMENTS_COLUMNS.BUDGET);
             const actualRaw = this.findColumn(row, CONFIG.REQUIREMENTS_COLUMNS.ACTUAL);
-            
+
             // Clean and parse numbers (remove commas, spaces, etc.)
             const budget = this.parseNumber(budgetRaw) || 0;
             const actual = this.parseNumber(actualRaw) || 0;
@@ -136,6 +144,7 @@ export class DataProcessor {
                 name: String(this.findColumn(row, CONFIG.REQUIREMENTS_COLUMNS.NAME) || ''),
                 budget: budget,
                 actual: actual,
+                remaining: budget - actual, // Calculate remaining
                 utilization: utilization,
                 status: fileStatus || getUtilizationStatus(utilization), // Use file status if available
                 utilizationStatus: getUtilizationStatus(utilization), // Keep utilization status separate
@@ -163,7 +172,7 @@ export class DataProcessor {
             const exactKey = Object.keys(row).find(k => String(k).trim() === trimmedName);
             if (exactKey !== undefined) return row[exactKey];
         }
-        
+
         // Case-insensitive match with trim
         const keys = Object.keys(row);
         for (const name of possibleNames) {
@@ -171,7 +180,7 @@ export class DataProcessor {
             const found = keys.find(k => String(k).trim().toLowerCase().includes(trimmedName));
             if (found) return row[found];
         }
-        
+
         return null;
     }
 
@@ -181,12 +190,12 @@ export class DataProcessor {
     parseNumber(value) {
         if (value === null || value === undefined) return null;
         if (typeof value === 'number') return value;
-        
+
         // Convert to string and clean
         let str = String(value).trim();
         // Remove commas, spaces, and other non-numeric chars except decimal point and minus
         str = str.replace(/[^\d.-]/g, '');
-        
+
         const num = parseFloat(str);
         return isNaN(num) ? null : num;
     }
@@ -196,13 +205,13 @@ export class DataProcessor {
      */
     formatDate(dateValue) {
         if (!dateValue) return '';
-        
+
         // Excel serial date
         if (typeof dateValue === 'number') {
             const date = new Date((dateValue - 25569) * 86400 * 1000);
             return date.toLocaleDateString('he-IL');
         }
-        
+
         // String date
         if (typeof dateValue === 'string') {
             // Try parsing various formats
@@ -212,7 +221,7 @@ export class DataProcessor {
             }
             return dateValue;
         }
-        
+
         return String(dateValue);
     }
 
@@ -221,30 +230,30 @@ export class DataProcessor {
      */
     classifyWorkType(typeValue) {
         if (!typeValue) return 'אחר';
-        
+
         const type = String(typeValue).toLowerCase();
-        
+
         // Check investment
         for (const inv of CONFIG.WORK_TYPES.INVESTMENT) {
             if (type.includes(inv.toLowerCase())) {
                 return 'השקעה';
             }
         }
-        
+
         // Check expense
         for (const exp of CONFIG.WORK_TYPES.EXPENSE) {
             if (type.includes(exp.toLowerCase())) {
                 return 'הוצאה';
             }
         }
-        
+
         // Check absence
         for (const abs of CONFIG.WORK_TYPES.ABSENCE) {
             if (type.includes(abs.toLowerCase())) {
                 return 'היעדרות';
             }
         }
-        
+
         return 'אחר';
     }
 
@@ -263,10 +272,10 @@ export class DataProcessor {
      */
     buildEmployeeSummary() {
         this.employeeSummary = {};
-        
+
         this.processedHours.forEach(row => {
             const key = row.employeeId || row.employee;
-            
+
             if (!this.employeeSummary[key]) {
                 this.employeeSummary[key] = {
                     name: row.employee,
@@ -282,10 +291,10 @@ export class DataProcessor {
                     tasks: new Set()
                 };
             }
-            
+
             const emp = this.employeeSummary[key];
             emp.totalHours += row.hours;
-            
+
             // Use the already classified type from processedHours
             if (row.type === 'השקעה') {
                 emp.investmentHours += row.hours;
@@ -294,7 +303,7 @@ export class DataProcessor {
             } else if (row.type === 'היעדרות') {
                 emp.absenceHours += row.hours;
             }
-            
+
             if (row.requirement) emp.requirements.add(row.requirement);
             if (row.date) emp.days.add(row.date);
             if (row.task) emp.tasks.add(row.task);
@@ -302,24 +311,24 @@ export class DataProcessor {
 
         // Calculate percentages and normalize employee type
         Object.values(this.employeeSummary).forEach(emp => {
-            emp.investmentPercent = emp.totalHours > 0 
-                ? (emp.investmentHours / emp.totalHours) * 100 
+            emp.investmentPercent = emp.totalHours > 0
+                ? (emp.investmentHours / emp.totalHours) * 100
                 : 0;
-            emp.expensePercent = emp.totalHours > 0 
-                ? (emp.expenseHours / emp.totalHours) * 100 
+            emp.expensePercent = emp.totalHours > 0
+                ? (emp.expenseHours / emp.totalHours) * 100
                 : 0;
             emp.requirementCount = emp.requirements.size;
             emp.dayCount = emp.days.size;
             emp.taskCount = emp.tasks.size;
-            
+
             // Normalize employee type from Excel (remove "עובד" prefix if exists)
             // "עובד מתף" → "מתף", "עובד פרויקטלי" → "פרויקטלי"
             if (emp.employeeType && emp.employeeType.trim() !== '') {
                 let normalized = emp.employeeType.trim();
-                
+
                 // Remove "עובד" prefix if exists
                 normalized = normalized.replace(/^עובד\s+/i, '').trim();
-                
+
                 // Handle common variations
                 if (normalized.includes('מתף') || normalized.includes('MATAF')) {
                     emp.type = 'מתף';
@@ -355,11 +364,11 @@ export class DataProcessor {
      */
     buildTaskMatrix() {
         const taskData = {};
-        
+
         this.processedHours.forEach(row => {
             const task = row.task;
             if (!task) return;
-            
+
             if (!taskData[task]) {
                 taskData[task] = {
                     employees: new Set(),
@@ -367,21 +376,21 @@ export class DataProcessor {
                     type: row.type || 'אחר' // Use already classified type
                 };
             }
-            
+
             taskData[task].employees.add(row.employee);
             taskData[task].totalHours += row.hours;
-            
+
             // Update type if we have a better classification
             if (row.type && row.type !== 'אחר') {
                 taskData[task].type = row.type;
             }
         });
-        
+
         // Sort by employee count descending
         const sortedTasks = Object.entries(taskData)
             .sort((a, b) => b[1].employees.size - a[1].employees.size)
             .slice(0, CONFIG.MAX_MATRIX_TASKS || 20);
-        
+
         this.taskMatrix = sortedTasks.map(([name, data]) => ({
             name,
             employeeCount: data.employees.size,
@@ -389,7 +398,7 @@ export class DataProcessor {
             type: data.type,
             employees: Array.from(data.employees)
         }));
-        
+
         // Calculate KPIs
         this.taskKPIs = {
             total: Object.keys(taskData).length,
@@ -397,7 +406,7 @@ export class DataProcessor {
             investment: Object.values(taskData).filter(t => t.type === 'השקעה').length,
             expense: Object.values(taskData).filter(t => t.type === 'הוצאה').length
         };
-        
+
         return this.taskMatrix;
     }
 
@@ -431,6 +440,68 @@ export class DataProcessor {
     }
 
     /**
+     * Get Requirements KPIs (New)
+     */
+    getRequirementsKPIs() {
+        const reqs = this.processedRequirements;
+
+        // 1. Active count
+        const activeCount = reqs.filter(r => r.status && r.status.toLowerCase() === 'active').length;
+
+        // 2. Done count
+        const done = reqs.filter(r => r.status && r.status.toLowerCase() === 'done');
+        const doneCount = done.length;
+
+        // 3. Overbudget count
+        const overbudget = reqs.filter(r => r.utilization > 100);
+        const overbudgetCount = overbudget.length;
+
+        // 4. Done & Budget Remainder
+        const doneWithBudget = done.filter(r => r.remaining > 0);
+        const doneWithBudgetCount = doneWithBudget.length;
+        const totalDoneRemainder = doneWithBudget.reduce((sum, r) => sum + r.remaining, 0);
+
+        // 5. Utilization 90-100%
+        const highUtilization = reqs.filter(r => r.utilization >= 90 && r.utilization < 100);
+        const highUtilizationCount = highUtilization.length;
+        const totalHighUtilizationRemainder = highUtilization.reduce((sum, r) => sum + (r.remaining > 0 ? r.remaining : 0), 0);
+
+        // 6. Top Requester
+        const requesterMap = {};
+        reqs.forEach(r => {
+            // Count only Active requirements
+            if (r.requester && r.status && r.status.toLowerCase() === 'active') {
+                requesterMap[r.requester] = (requesterMap[r.requester] || 0) + 1;
+            }
+        });
+
+        let topRequester = { name: 'אין נתונים', count: 0 };
+        Object.entries(requesterMap).forEach(([name, count]) => {
+            if (count > topRequester.count) {
+                topRequester = { name, count };
+            }
+        });
+
+        return {
+            activeCount,
+            doneCount,
+            overbudgetCount,
+            doneWithBudgetCount,
+            totalDoneRemainder,
+            highUtilizationCount,
+            totalHighUtilizationRemainder,
+            topRequester
+        };
+    }
+
+    /**
+     * Get Exceptions Data
+     */
+    getExceptions() {
+        return this.exceptionsData || [];
+    }
+
+    /**
      * Get hours totals (investment/expense/total)
      */
     getHoursTotals() {
@@ -442,7 +513,7 @@ export class DataProcessor {
 
         // Get filtered hours data (respects team filter)
         const hoursData = this.getHours();
-        
+
         hoursData.forEach(row => {
             totals.totalHours += row.hours;
             if (row.type === 'השקעה') totals.investmentHours += row.hours;
@@ -458,7 +529,7 @@ export class DataProcessor {
     linkHoursToRequirements() {
         // Calculate actual hours per requirement
         const hoursPerReq = {};
-        
+
         this.processedHours.forEach(row => {
             if (row.requirement) {
                 hoursPerReq[row.requirement] = (hoursPerReq[row.requirement] || 0) + row.hours;
@@ -480,11 +551,11 @@ export class DataProcessor {
         // Get filtered data (respects team filter)
         const employeesArray = this.getEmployeesArray();
         const hoursData = this.getHours();
-        
+
         const employees = employeesArray.length;
         const totalHours = hoursData.reduce((sum, row) => sum + row.hours, 0);
         const requirements = this.processedRequirements.length;
-        const overBudget = this.processedRequirements.filter(req => 
+        const overBudget = this.processedRequirements.filter(req =>
             req.utilization > CONFIG.BUDGET_OVERRUN_THRESHOLD
         ).length;
 
@@ -499,14 +570,14 @@ export class DataProcessor {
     /**
      * Get processed hours data
      */
-    getHours() {
+    getHours(skipFilter = false) {
         let hours = this.processedHours;
-        
-        // Apply team filter if available
-        if (this.teamFilter) {
+
+        // Apply team filter if available AND not skipped
+        if (this.teamFilter && !skipFilter) {
             hours = this.teamFilter.filterHoursData(hours);
         }
-        
+
         return hours;
     }
 
@@ -529,22 +600,22 @@ export class DataProcessor {
      */
     getEmployeeDetails(employeeIdOrName) {
         if (!this.employeeSummary) return null;
-        
+
         // Try to find by ID first, then by name
         let employee = this.employeeSummary[employeeIdOrName];
-        
+
         if (!employee) {
             // Try to find by name
-            employee = Object.values(this.employeeSummary).find(emp => 
+            employee = Object.values(this.employeeSummary).find(emp =>
                 emp.name === employeeIdOrName || emp.id === employeeIdOrName
             );
         }
-        
+
         if (!employee) return null;
 
         // Get all hours records for this employee
-        const employeeHours = this.processedHours.filter(h => 
-            (h.employeeId && h.employeeId === employee.id) || 
+        const employeeHours = this.processedHours.filter(h =>
+            (h.employeeId && h.employeeId === employee.id) ||
             (h.employee === employee.name)
         );
 
@@ -577,9 +648,9 @@ export class DataProcessor {
             ...employee,
             tasks: tasksArray.sort((a, b) => b.totalHours - a.totalHours),
             totalRecords: employeeHours.length,
-            firstDate: employeeHours.length > 0 ? 
+            firstDate: employeeHours.length > 0 ?
                 employeeHours.reduce((min, h) => !min || h.date < min ? h.date : min, null) : null,
-            lastDate: employeeHours.length > 0 ? 
+            lastDate: employeeHours.length > 0 ?
                 employeeHours.reduce((max, h) => !max || h.date > max ? h.date : null, null) : null
         };
     }
@@ -589,9 +660,9 @@ export class DataProcessor {
      */
     searchHours(query) {
         if (!query) return this.processedHours;
-        
+
         const q = query.toLowerCase();
-        return this.processedHours.filter(row => 
+        return this.processedHours.filter(row =>
             row.employee.toLowerCase().includes(q) ||
             row.task.toLowerCase().includes(q) ||
             row.requirement.includes(q)
@@ -603,9 +674,9 @@ export class DataProcessor {
      */
     searchRequirements(query) {
         if (!query) return this.processedRequirements;
-        
+
         const q = query.toLowerCase();
-        return this.processedRequirements.filter(row => 
+        return this.processedRequirements.filter(row =>
             row.id.toLowerCase().includes(q) ||
             row.name.toLowerCase().includes(q)
         );
@@ -618,13 +689,13 @@ export class DataProcessor {
         if (status === 'all') {
             return this.processedRequirements;
         }
-        
+
         if (status === 'overbudget') {
             return this.processedRequirements.filter(req => req.utilization > CONFIG.BUDGET_OVERRUN_THRESHOLD);
         }
-        
+
         // Filter by status from file (Active, Backlog, Done, etc.)
-        return this.processedRequirements.filter(req => 
+        return this.processedRequirements.filter(req =>
             req.status && req.status.toLowerCase() === status.toLowerCase()
         );
     }
@@ -634,16 +705,16 @@ export class DataProcessor {
      */
     getRequirementsFilterCounts() {
         const all = this.processedRequirements.length;
-        const active = this.processedRequirements.filter(req => 
+        const active = this.processedRequirements.filter(req =>
             req.status && req.status.toLowerCase() === 'active'
         ).length;
-        const backlog = this.processedRequirements.filter(req => 
+        const backlog = this.processedRequirements.filter(req =>
             req.status && req.status.toLowerCase() === 'backlog'
         ).length;
-        const done = this.processedRequirements.filter(req => 
+        const done = this.processedRequirements.filter(req =>
             req.status && req.status.toLowerCase() === 'done'
         ).length;
-        const overbudget = this.processedRequirements.filter(req => 
+        const overbudget = this.processedRequirements.filter(req =>
             req.utilization > CONFIG.BUDGET_OVERRUN_THRESHOLD
         ).length;
 
@@ -653,15 +724,15 @@ export class DataProcessor {
     /**
      * Get employees as array sorted by total hours
      */
-    getEmployeesArray() {
+    getEmployeesArray(skipFilter = false) {
         let employees = Object.values(this.employeeSummary)
             .sort((a, b) => b.totalHours - a.totalHours);
-        
-        // Apply team filter if available
-        if (this.teamFilter) {
+
+        // Apply team filter if available AND not skipped
+        if (this.teamFilter && !skipFilter) {
             employees = this.teamFilter.filterEmployees(employees);
         }
-        
+
         return employees;
     }
 
@@ -676,13 +747,13 @@ export class DataProcessor {
     /**
      * Get tasks grouped by task name with employee details
      */
-    getTasksGrouped() {
-        const hours = this.getHours(); // Already filtered by team
+    getTasksGrouped(skipFilter = false) {
+        const hours = this.getHours(skipFilter);
         const tasksMap = new Map();
 
         hours.forEach(record => {
             const taskName = record.task || 'ללא משימה';
-            
+
             if (!tasksMap.has(taskName)) {
                 // Build full path: משימה -> פעילות -> פעילות משנה -> תת פעילות
                 const pathParts = [
@@ -691,9 +762,9 @@ export class DataProcessor {
                     record.subActivity,
                     record.subSubActivity
                 ].filter(part => part && part.trim()); // Remove empty parts
-                
+
                 const fullPath = pathParts.length > 0 ? pathParts.join(' ← ') : 'ללא משימה';
-                
+
                 tasksMap.set(taskName, {
                     name: taskName,
                     fullPath: fullPath,
@@ -705,7 +776,8 @@ export class DataProcessor {
                     taskField: record.taskField || '',
                     activity: record.activity || '',
                     subActivity: record.subActivity || '',
-                    subSubActivity: record.subSubActivity || ''
+                    subSubActivity: record.subSubActivity || '',
+                    raw: record.raw // Store raw data of first occurrence for deep search
                 });
             }
 
@@ -790,9 +862,9 @@ export class DataProcessor {
      */
     searchEmployees(query) {
         if (!query) return this.getEmployeesArray();
-        
+
         const q = query.toLowerCase();
-        return this.getEmployeesArray().filter(emp => 
+        return this.getEmployeesArray().filter(emp =>
             emp.name.toLowerCase().includes(q) ||
             (emp.id && emp.id.toLowerCase().includes(q))
         );

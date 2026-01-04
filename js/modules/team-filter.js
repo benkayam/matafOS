@@ -74,7 +74,7 @@ export class TeamFilter {
      */
     init(onTeamChangeCallback) {
         this.onTeamChange = onTeamChangeCallback;
-        
+
         const teamSelector = document.getElementById('teamSelector');
         if (!teamSelector) {
             console.warn('Team selector not found');
@@ -83,13 +83,16 @@ export class TeamFilter {
 
         // Load teams structure
         this.loadTeamsStructure().then(() => {
+            // Populate selector options dynamically
+            this.populateTeamSelector(teamSelector);
+
             // Load saved team from localStorage
             const savedTeam = this.loadSavedTeam();
-            if (savedTeam) {
+            if (savedTeam && this.getTeam(savedTeam)) { // Validate saved team exists
                 teamSelector.value = savedTeam;
                 this.currentTeam = savedTeam;
                 console.log(`💾 Loaded saved team: ${savedTeam}`);
-                
+
                 // Trigger callback with saved team
                 if (this.onTeamChange) {
                     this.onTeamChange(savedTeam);
@@ -106,15 +109,32 @@ export class TeamFilter {
     }
 
     /**
+     * Populate team selector options from data
+     * @param {HTMLSelectElement} selector 
+     */
+    populateTeamSelector(selector) {
+        if (!this.teamsData || !this.teamsData.teams) return;
+
+        selector.innerHTML = ''; // Clear existing
+
+        this.teamsData.teams.forEach(team => {
+            const option = document.createElement('option');
+            option.value = team.id;
+            option.textContent = team.name;
+            selector.appendChild(option);
+        });
+    }
+
+    /**
      * Set current team and trigger callback
      */
     setCurrentTeam(teamId) {
         this.currentTeam = teamId;
         console.log(`📊 Team changed to: ${teamId}`);
-        
+
         // Save to localStorage
         this.saveTeam(teamId);
-        
+
         if (this.onTeamChange) {
             this.onTeamChange(teamId);
         }
@@ -172,10 +192,10 @@ export class TeamFilter {
      */
     isEmployeeInCurrentTeam(employeeId) {
         if (this.currentTeam === 'all') return true;
-        
+
         const team = this.getCurrentTeamData();
         if (!team) return true;
-        
+
         // Convert both to strings for comparison
         const empIdStr = String(employeeId).trim();
         return team.employees.some(id => String(id).trim() === empIdStr);
@@ -186,7 +206,7 @@ export class TeamFilter {
      */
     filterEmployees(employees) {
         if (this.currentTeam === 'all') return employees;
-        
+
         return employees.filter(emp => {
             const empId = emp.id || emp.employeeId || emp['מספר עובד'];
             return this.isEmployeeInCurrentTeam(empId);
@@ -198,7 +218,7 @@ export class TeamFilter {
      */
     filterHoursData(hoursData) {
         if (this.currentTeam === 'all') return hoursData;
-        
+
         return hoursData.filter(row => {
             const empId = row.employeeId || row['מספר עובד'];
             return this.isEmployeeInCurrentTeam(empId);

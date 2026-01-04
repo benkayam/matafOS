@@ -30,7 +30,10 @@ html {
 }
 
 /* GPU acceleration for animations */
-.card, .summary-card, .tab-button, .drop-zone {
+.card,
+.summary-card,
+.tab-button,
+.drop-zone {
     transform: translateZ(0);
     backface-visibility: hidden;
     perspective: 1000px;
@@ -60,6 +63,33 @@ html {
     font-weight: 600;
     margin: 0;
     white-space: nowrap;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+}
+
+.btn-frameless {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0;
+    width: auto !important;
+    height: auto !important;
+}
+
+.btn-frameless:hover {
+    background: transparent !important;
+    transform: translateY(-1px) !important;
+    box-shadow: none !important;
+    opacity: 0.8;
+}
+
+.dashboard-logo {
+    height: 32px;
+    width: auto;
+    margin-left: 12px;
 }
 
 .header-controls {
@@ -169,8 +199,17 @@ html {
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.7; transform: scale(1.2); }
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(1.2);
+    }
 }
 
 .drop-icon {
@@ -205,6 +244,49 @@ html {
     font-size: var(--font-size-sm);
     opacity: 0.7;
     padding: 0;
+}
+
+/* Tighter Button Styles */
+.btn-frameless {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    /* Remove default margin */
+    min-width: 0;
+    /* Enable shrinking */
+    width: 20px;
+    /* Force small size */
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.btn-frameless:hover {
+    background: transparent;
+    transform: none;
+    box-shadow: none;
+    opacity: 1;
+}
+
+.btn-frameless img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.filter-bar-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    /* Align to Left in RTL */
+    gap: 5px;
+    /* Strict 5px gap */
 }
 
 .file-info .btn-clear:hover {
@@ -276,8 +358,13 @@ html {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 /* ============================================
@@ -290,7 +377,8 @@ html {
     margin-bottom: 24px;
 }
 
-.summary-card, .card {
+.summary-card,
+.card {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -302,7 +390,8 @@ html {
     transition: all 0.2s ease;
 }
 
-.summary-card:hover, .card:hover {
+.summary-card:hover,
+.card:hover {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
     transform: translateY(-2px);
 }
@@ -323,7 +412,8 @@ html {
 }
 
 .card-icon {
-    display: none; /* Remove emoji icons */
+    display: none;
+    /* Remove emoji icons */
 }
 
 .card-content {
@@ -420,7 +510,8 @@ html {
     -webkit-overflow-scrolling: touch;
 }
 
-.table, .data-table {
+.table,
+.data-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
@@ -428,7 +519,8 @@ html {
     font-family: var(--font-family-main);
 }
 
-.table thead, .data-table thead {
+.table thead,
+.data-table thead {
     background: var(--fibi-blue-light);
     border-bottom: 2px solid var(--fibi-blue-primary);
     position: sticky;
@@ -451,7 +543,8 @@ html {
     background: rgba(238, 245, 251, 0.7);
 }
 
-.table th, .data-table th {
+.table th,
+.data-table th {
     padding: 12px;
     text-align: right;
     color: var(--fibi-blue-primary);
@@ -462,30 +555,36 @@ html {
     direction: rtl;
 }
 
-.table th:hover, .data-table th:hover {
+.table th:hover,
+.data-table th:hover {
     background: rgba(238, 245, 251, 0.7);
 }
 
-.table tbody tr, .data-table tbody tr {
+.table tbody tr,
+.data-table tbody tr {
     border-bottom: 1px solid var(--fibi-gray-300);
     transition: background 0.15s ease;
 }
 
-.table tbody tr:hover, .data-table tbody tr:hover {
+.table tbody tr:hover,
+.data-table tbody tr:hover {
     background: var(--fibi-blue-light);
 }
 
-.table tbody tr.requirement-row:hover, .data-table tbody tr.requirement-row:hover {
-    background: var(--fibi-blue-light);
-    cursor: pointer;
-}
-
-.table tbody tr.employee-row:hover, .data-table tbody tr.employee-row:hover {
+.table tbody tr.requirement-row:hover,
+.data-table tbody tr.requirement-row:hover {
     background: var(--fibi-blue-light);
     cursor: pointer;
 }
 
-.table td, .data-table td {
+.table tbody tr.employee-row:hover,
+.data-table tbody tr.employee-row:hover {
+    background: var(--fibi-blue-light);
+    cursor: pointer;
+}
+
+.table td,
+.data-table td {
     padding: 12px;
     color: var(--fibi-blue-primary);
     text-align: right;
@@ -493,7 +592,8 @@ html {
     font-size: 13px;
 }
 
-.table .number-cell, .data-table .number-cell {
+.table .number-cell,
+.data-table .number-cell {
     font-family: var(--font-family-main);
     text-align: right;
     direction: rtl;
@@ -509,7 +609,8 @@ html {
 /* ============================================
    STATUS BADGES - Minimal
    ============================================ */
-.status-badge, .badge {
+.status-badge,
+.badge {
     padding: var(--spacing-xs) var(--spacing-sm);
     border-radius: var(--radius-sm);
     font-size: var(--font-size-xs);
@@ -517,19 +618,22 @@ html {
     display: inline-block;
 }
 
-.status-success, .badge-success {
+.status-success,
+.badge-success {
     background: var(--light-gray);
     color: var(--success-green);
     border: 1px solid var(--success-green);
 }
 
-.status-warning, .badge-warning {
+.status-warning,
+.badge-warning {
     background: var(--light-gray);
     color: #E68A00;
     border: 1px solid var(--primary-gold);
 }
 
-.status-danger, .badge-danger {
+.status-danger,
+.badge-danger {
     background: var(--light-gray);
     color: var(--error-red);
     border: 1px solid var(--error-red);
@@ -598,7 +702,8 @@ html {
     font-size: var(--font-size-sm);
 }
 
-.filter-bar button, .btn {
+.filter-bar button,
+.btn {
     padding: 8px 16px;
     border: 1px solid var(--fibi-blue-primary);
     border-radius: 8px;
@@ -617,11 +722,13 @@ html {
     justify-content: center;
 }
 
-.filter-bar button:hover, .btn:hover {
+.filter-bar button:hover,
+.btn:hover {
     background: var(--fibi-blue-light);
 }
 
-.filter-bar button.active, .btn.active {
+.filter-bar button.active,
+.btn.active {
     background: var(--fibi-yellow-primary);
     color: var(--fibi-blue-primary);
     border-color: var(--fibi-yellow-primary);
@@ -647,75 +754,244 @@ html {
 /* ============================================
    MATRIX VIEW - Minimal Tiles
    ============================================ */
-.matrix-container {
+/* ============================================
+   TASKS / MATRIX VIEW - Redesigned Cards
+   ============================================ */
+/* ============================================
+   TOAST NOTIFICATIONS
+   ============================================ */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: #323232;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md) 0;
+    align-items: center;
+    gap: 10px;
 }
 
-.matrix-tile {
-    width: 130px;
-    height: 100px;
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast-success {
+    background-color: var(--fibi-success);
+}
+
+.toast-error {
+    background-color: var(--fibi-error);
+}
+
+/* ============================================
+   TASKS / MATRIX VIEW - Modern Redesign
+   ============================================ */
+
+
+.tasks-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    padding: 12px 0;
+}
+
+.task-card {
+    background: var(--fibi-white);
+    border-radius: 8px;
+    padding: 8px 10px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    cursor: pointer;
-    transition: all var(--transition-base);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--light-border);
-    background: var(--text-white);
-}
-
-.matrix-tile:hover {
-    box-shadow: var(--shadow-md);
-}
-
-.matrix-tile.tile-green {
-    border-left: 3px solid var(--success-green);
-}
-
-.matrix-tile.tile-yellow {
-    border-left: 3px solid var(--primary-gold);
-}
-
-.matrix-tile.tile-red {
-    border-left: 3px solid var(--error-red);
-}
-
-.tile-name {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
-    color: var(--text-dark);
-    line-height: 1.3;
+    min-height: 48px;
+    position: relative;
     overflow: hidden;
-    text-overflow: ellipsis;
+
+    /* Modern Shadow & Border */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
 }
 
-.tile-stats {
+/* Hover Effect: Lift */
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Status Strip (Left Border) - Made Subtle */
+.task-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    /* RTL: right side */
+    bottom: 0;
+    width: 3px;
+    /* Reduced from 6px */
+    background: var(--fibi-gray-300);
+    /* Default */
+    transition: background 0.3s ease;
+    border-radius: 0 2px 2px 0;
+}
+
+.task-card.investment::before {
+    background: var(--fibi-success) !important;
+    /* Green */
+}
+
+.task-card.expense::before {
+    background: var(--fibi-error) !important;
+    /* Red */
+    /* Or Orange: #F59E0B */
+}
+
+/* Header */
+.task-card-header {
+    margin-bottom: 2px;
+    /* Reduced from 4px */
+    z-index: 1;
+}
+
+.task-card-title {
+    font-size: 13px;
+    /* Reduced from 16px */
+    font-weight: 600;
+    color: var(--fibi-gray-800);
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Big Number (Hours) */
+.task-card-hours {
+    font-size: 18px;
+    /* Reduced from 24px */
+    font-weight: 700;
+    color: var(--fibi-blue-primary);
+    margin: 2px 0;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    z-index: 1;
+}
+
+/* Meta Info (Bottom) */
+.task-card-meta {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
+    margin-top: 4px;
+    /* Reduced from 8px */
+    z-index: 1;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding-top: 4px;
+    /* Reduced from 8px */
 }
 
-.tile-employees {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
+.task-card-employees {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--fibi-gray-500);
+    font-size: 11px;
+    font-weight: 500;
 }
 
-.tile-green .tile-employees { color: var(--success-green); }
-.tile-yellow .tile-employees { color: #E68A00; }
-.tile-red .tile-employees { color: var(--error-red); }
-
-.tile-hours {
-    font-size: var(--font-size-xs);
-    color: var(--slate-blue);
+.task-card-employees svg {
+    width: 12px;
+    height: 12px;
+    stroke: var(--fibi-gray-400);
 }
 
-.tile-badge {
-    display: none; /* Remove emoji badges */
+/* Type Badge (optional, if we want text as well) */
+.task-card-type {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.task-card-type.investment {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--fibi-success);
+}
+
+.task-card-type.expense {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--fibi-error);
+}
+
+/* Decorative Status Indicator (Top Right Dot) */
+.task-card::after {
+    content: '';
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    /* RTL flip means visual left is logical left in code but let's check direction */
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--fibi-gray-300);
+    /* Default inactive */
+    display: none;
+    /* Hiding decorative dot for cleaner look */
+}
+
+/* If active (employees > 0), make it blue */
+.task-card:has(.task-card-employees span:not(:empty))::after {
+    /* Conditional logic via JS might be better, but we can try generic */
+    background-color: var(--fibi-blue-primary);
+    opacity: 0.2;
+}
+
+/* Maintain .matrix-tile for backward compatibility */
+.matrix-tile {
+    display: none;
+}
+
+
+/* ============================================
+   BUTTONS: Icon Only (Neutral)
+   ============================================ */
+.btn-icon-only {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: var(--fibi-gray-600);
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.btn-icon-only:hover {
+    background: var(--fibi-gray-100);
+    color: var(--fibi-blue-primary);
+}
+
+.btn-icon-only img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
 }
 
 /* ============================================
@@ -743,23 +1019,23 @@ html {
     .dashboard-container {
         padding: var(--spacing-md);
     }
-    
+
     .dashboard-header {
         padding: var(--spacing-md);
     }
-    
+
     .header-title h1 {
         font-size: var(--font-size-md);
     }
-    
+
     .tabs {
         flex-direction: column;
     }
-    
+
     .summary-section {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .table th,
     .table td {
         padding: var(--spacing-sm);
@@ -829,6 +1105,7 @@ html {
         opacity: 0;
         transform: translateY(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1136,13 +1413,15 @@ html {
 
 /* Table height for 20+ rows */
 .table-container {
-    max-height: 650px; /* ~20 rows at 32px each */
+    max-height: 650px;
+    /* ~20 rows at 32px each */
     overflow-y: auto;
     position: relative;
 }
 
 .table-container.large {
-    max-height: 800px; /* ~25 rows */
+    max-height: 800px;
+    /* ~25 rows */
 }
 
 /* Sticky table headers */
@@ -1470,3 +1749,174 @@ html {
     border: 1px solid #fecaca;
 }
 
+/* FORCED OVERRIDES - SAFE APPEND */
+.btn-frameless {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+    width: 20px !important;
+    height: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0.7;
+}
+
+.btn-frameless:hover {
+    background: rgba(0, 0, 0, 0.05) !important;
+    opacity: 1;
+    border-radius: 4px;
+}
+
+.btn-frameless img {
+    width: 16px !important;
+    height: 16px !important;
+    object-fit: contain;
+}
+
+.filter-bar-right {
+    gap: 5px !important;
+}
+
+/* Tiny Task Cards */
+.tasks-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+    gap: 10px !important;
+}
+
+.task-card {
+    min-height: 80px !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+.task-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.task-card-header {
+    margin-bottom: 4px !important;
+}
+
+.task-card-title {
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+}
+
+.task-card-hours {
+    font-size: 20px !important;
+    margin: 4px 0 !important;
+}
+
+.task-card-meta {
+    margin-top: 8px !important;
+    padding-top: 8px !important;
+}
+
+.task-card-employees {
+    font-size: 11px !important;
+}
+
+.task-card-employees svg {
+    width: 12px !important;
+    height: 12px !important;
+}
+
+/* Search Results UI */
+#searchAutocomplete,
+.search-autocomplete {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+    z-index: 9999 !important;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* FORCED OVERRIDES - SAFE APPEND 2 */
+.btn-frameless {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+    width: 20px !important;
+    height: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0.7;
+}
+
+.btn-frameless:hover {
+    background: rgba(0, 0, 0, 0.05) !important;
+    opacity: 1;
+    border-radius: 4px;
+}
+
+.btn-frameless img {
+    width: 16px !important;
+    height: 16px !important;
+    object-fit: contain;
+}
+
+.filter-bar-right {
+    gap: 5px !important;
+}
+
+/* Tiny Task Cards */
+.tasks-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+    gap: 10px !important;
+}
+
+.task-card {
+    min-height: 80px !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+.task-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.task-card-header {
+    margin-bottom: 4px !important;
+}
+
+.task-card-title {
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+}
+
+.task-card-hours {
+    font-size: 20px !important;
+    margin: 4px 0 !important;
+}
+
+.task-card-meta {
+    margin-top: 8px !important;
+    padding-top: 8px !important;
+}
+
+.task-card-employees {
+    font-size: 11px !important;
+}
+
+.task-card-employees svg {
+    width: 12px !important;
+    height: 12px !important;
+}
+
+/* Search Results UI */
+#searchAutocomplete,
+.search-autocomplete {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+    z-index: 9999 !important;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}

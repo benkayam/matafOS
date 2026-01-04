@@ -5,8 +5,7 @@
  * Centralized modal management with export functionality
  */
 
-export class ModalManager 
-{
+export class ModalManager {
     constructor() {
         this.currentModal = null;
     }
@@ -14,29 +13,20 @@ export class ModalManager
     /**
      * Create export buttons HTML
      */
-    createExportButtons(exportExcelId = 'modalExportExcel', exportPDFId = 'modalExportPDF') {
+    createExportButtons(exportExcelId = 'modalExportExcel', exportPDFId = 'modalExportPDF', exportHTMLId = 'modalExportHTML') {
         return `
-
-            <div class="filter-bar-left">
-                <button class="btn btn-export" id="${exportExcelId}">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="9" y1="15" x2="15" y2="15"/>
-                        <line x1="9" y1="12" x2="15" y2="12"/>
-                        <line x1="9" y1="18" x2="15" y2="18"/>
-                    </svg>
-                    אקסל
-                </button>
-                <button class="btn btn-export" id="${exportPDFId}">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <path d="M9 13h6"/>
-                        <path d="M9 17h6"/>
-                    </svg>
-                    PDF
-                </button>
+            <div class="filter-bar" style="margin: 0; padding: 0; background: transparent; border: none; width: 100%;">
+                <div class="filter-bar-right" style="gap: 5px; width: 100%; justify-content: flex-end;">
+                    <button class="btn btn-icon-only btn-frameless" id="${exportExcelId}" title="ייצוא לאקסל">
+                        <img src="icons/excel.png" alt="Excel">
+                    </button>
+                    <button class="btn btn-icon-only btn-frameless" id="${exportPDFId}" title="ייצוא ל-PDF">
+                        <img src="icons/pdf.png" alt="PDF">
+                    </button>
+                    <button class="btn btn-icon-only btn-frameless" id="${exportHTMLId}" title="ייצוא למייל (HTML)">
+                        <img src="icons/html.png" alt="HTML">
+                    </button>
+                </div>
             </div>
         `;
     }
@@ -72,6 +62,8 @@ export class ModalManager
         const {
             excelButtonId = 'modalExportExcel',
             pdfButtonId = 'modalExportPDF',
+            htmlButtonId = 'modalExportHTML',
+            tableId, // ID of the specific table to copy
             data,
             columns,
             title,
@@ -81,29 +73,49 @@ export class ModalManager
 
         const exportExcelBtn = document.getElementById(excelButtonId);
         const exportPDFBtn = document.getElementById(pdfButtonId);
+        const exportHTMLBtn = document.getElementById(htmlButtonId);
 
         if (exportExcelBtn && exporter) {
             exportExcelBtn.onclick = () => {
-                if (Array.isArray(data)) {
+                if (Array.isArray(data) && !columns) {
                     exporter.exportEmployeesToExcel(data, filename);
                 } else {
-                    exporter.exportToExcel([data], filename, title);
+                    exporter.exportToExcel(Array.isArray(data) ? data : [data], filename, title);
                 }
             };
         }
 
         if (exportPDFBtn && exporter) {
             exportPDFBtn.onclick = () => {
-                if (Array.isArray(data)) {
-                    exporter.exportEmployeesToPDF(data, title, filename);
-                } else {
+                // If columns are provided, use generic export even for arrays
+                if (columns) {
                     exporter.exportToPDF({
-                        data: [data],
+                        data: Array.isArray(data) ? data : [data],
                         columns: columns,
                         title: title,
                         filename: filename
                     });
+                } else if (Array.isArray(data)) {
+                    // Fallback to employee defaults only if no columns specified
+                    exporter.exportEmployeesToPDF(data, title, filename);
+                } else {
+                    // Single object details export logic (if supported via generic)
+                    // Currently Exporter doesn't have a catch-all for single object without columns, 
+                    // usually calls exportToPDF with data array.
+                    // For safety, let's wrap in array.
+                    exporter.exportToPDF({
+                        data: [data],
+                        columns: [], // Empty columns might fail, but it's better than nothing
+                        title: title,
+                        filename: filename
+                    });
                 }
+            };
+        }
+
+        if (exportHTMLBtn && exporter) {
+            exportHTMLBtn.onclick = () => {
+                exporter.exportToHTMLClipboard(tableId || 'modalTable');
             };
         }
     }
@@ -118,9 +130,9 @@ export class ModalManager
             return;
         }
 
-        const modalBody = modal.querySelector('.modal-body') || 
-                         document.getElementById(`${modalId.replace('Modal', '')}ModalBody`);
-        
+        const modalBody = modal.querySelector('.modal-body') ||
+            document.getElementById(`${modalId.replace('Modal', '')}ModalBody`);
+
         if (modalBody) {
             modalBody.innerHTML = content;
         }

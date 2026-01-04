@@ -1,39 +1,38 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>דשבורד ניהול</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="font-awesome.min.css">
+    <link rel="stylesheet" href="css/styles.css?v=3">
+
 </head>
+
 <body>
     <div class="dashboard-container">
         <!-- Header - Compact Single Line -->
         <header class="dashboard-header">
             <div class="header-title">
+                <img src="icons/logo.png" alt="Logo" class="dashboard-logo">
                 <h1>דשבורד ניהול</h1>
             </div>
-            
+
             <div class="header-controls">
                 <!-- בחירת תצוגה לפי צוות -->
                 <div class="team-selector-wrapper">
                     <label for="teamSelector" class="team-selector-label">תצוגה:</label>
                     <select id="teamSelector" class="team-selector">
-                        <option value="all">מנהל מדור</option>
-                        <option value="logashi">צוות לוגאשי</option>
-                        <option value="spishvili">צוות ספישווילי</option>
-                        <option value="retail">צוות ריטל</option>
-                        <option value="hoizman">צוות הויזמן</option>
+                        <!-- Populated dynamically from teams-structure.json -->
                     </select>
                 </div>
-                
+
                 <!-- קובץ דרישות -->
                 <div class="drop-zone compact" id="requirementsDropZone" data-type="requirements">
                     <input type="file" id="requirementsInput" accept=".xlsx,.xls,.csv" hidden>
                     <span class="file-status" data-status="empty">דרישות</span>
                 </div>
-                
+
                 <!-- קובץ שעות -->
                 <div class="drop-zone compact" id="hoursDropZone" data-type="hours">
                     <input type="file" id="hoursInput" accept=".xlsx,.xls,.csv" hidden>
@@ -44,7 +43,7 @@
 
         <!-- Tabs -->
         <nav class="tabs">
-            <button class="tab-button active" data-tab="employees">
+            <button class="tab-button" data-tab="employees">
                 עובדים
             </button>
             <button class="tab-button" data-tab="hours">
@@ -58,11 +57,13 @@
         <!-- Global Search -->
         <div class="global-search-container">
             <div class="search-box">
-                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
                     <circle cx="11" cy="11" r="8"></circle>
                     <path d="m21 21-4.35-4.35"></path>
                 </svg>
-                <input type="text" id="globalSearchInput" class="global-search-input" placeholder="חיפוש עובדים, דרישות, משימות...">
+                <input type="text" id="globalSearchInput" class="global-search-input"
+                    placeholder="חיפוש עובדים, דרישות, משימות...">
                 <button id="clearSearch" class="clear-search-btn" style="display: none;">×</button>
             </div>
             <div id="searchAutocomplete" class="search-autocomplete" style="display: none;"></div>
@@ -88,31 +89,38 @@
             </section>
 
             <!-- Tab: Employees (First) -->
-            <section class="tab-content active" id="employeesTab">
+            <section class="tab-content" id="employeesTab">
                 <!-- KPI Cards עבור עובדים -->
-                <div class="summary-section employees-kpis">
-                    <div class="card summary-card clickable-kpi" onclick="window.app && window.app.showAllEmployees()" style="cursor: pointer;" title="לחץ לרשימת כל העובדים">
+                <div class="summary-section employees-kpis" id="employeesKpiContainer">
+                    <div class="card summary-card clickable-kpi" onclick="window.app && window.app.showAllEmployees()"
+                        style="cursor: pointer;" title="לחץ לרשימת כל העובדים">
                         <div class="card-content">
                             <h3>סה"כ עובדים</h3>
                             <div class="card-value" id="totalEmployeesCount">-</div>
                         </div>
                     </div>
-                    <div class="card summary-card clickable-kpi" onclick="window.app && window.app.showEmployeesByType('מתף')" style="cursor: pointer;" title="לחץ לרשימת עובדי מתף">
+                    <div class="card summary-card clickable-kpi"
+                        onclick="window.app && window.app.showEmployeesByType('מתף')" style="cursor: pointer;"
+                        title="לחץ לרשימת עובדי מתף">
                         <div class="card-content">
                             <h3>עובדי מתף</h3>
                             <div class="card-value" id="matafEmployeesCount">-</div>
                         </div>
                     </div>
-                    <div class="card summary-card clickable-kpi" onclick="window.app && window.app.showEmployeesByType('פרויקטלי')" style="cursor: pointer;" title="לחץ לרשימת עובדים פרויקטליים">
+                    <div class="card summary-card clickable-kpi"
+                        onclick="window.app && window.app.showEmployeesByType('פרויקטלי')" style="cursor: pointer;"
+                        title="לחץ לרשימת עובדים פרויקטליים">
                         <div class="card-content">
                             <h3>עובדים פרויקטליים</h3>
                             <div class="card-value" id="projectEmployeesCount">-</div>
                         </div>
                     </div>
-                    <div class="card summary-card clickable-kpi" onclick="window.app && window.app.showLowInvestmentEmployees()" style="cursor: pointer;" title="לחץ לרשימת עובדים עם השקעה <65%">
+                    <div class="card summary-card clickable-kpi"
+                        onclick="window.app && window.app.showLowInvestmentEmployees()" style="cursor: pointer;"
+                        title="לחץ לרשימת עובדים עם השקעה <65%">
                         <div class="card-content">
                             <h3>השקעה < 65%</h3>
-                            <div class="card-value warning" id="lowInvestmentEmployeesCount">-</div>
+                                    <div class="card-value warning" id="lowInvestmentEmployeesCount">-</div>
                         </div>
                     </div>
                     <div class="card summary-card">
@@ -137,18 +145,22 @@
                         <div class="filter-bar-left">
                             <h2 style="margin:0;">פירוט עובדים</h2>
                         </div>
-                        <div class="filter-bar-right">
-                            <button class="btn btn-export" onclick="window.app && window.app.exportEmployeesExcel()">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                                אקסל
+                        <div class="filter-bar-right" style="gap: 5px; display: flex;">
+                            <button class="btn btn-icon-only btn-frameless"
+                                onclick="window.app && window.app.exportEmployeesExcel()" title="ייצוא לאקסל">
+                                <img src="icons/excel.png" alt="Excel">
                             </button>
-                            <button class="btn btn-export" onclick="window.app && window.app.exportEmployeesPDF()">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                                PDF
+                            <button class="btn btn-icon-only btn-frameless"
+                                onclick="window.app && window.app.exportEmployeesPDF()" title="ייצוא ל-PDF">
+                                <img src="icons/pdf.png" alt="PDF">
+                            </button>
+                            <button class="btn btn-icon-only btn-frameless"
+                                onclick="window.app && window.app.exportEmployeesHTML()" title="ייצוא למייל (HTML)">
+                                <img src="icons/html.png" alt="HTML">
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="table-container">
                         <table class="data-table table" id="employeesTable">
                             <thead>
@@ -175,7 +187,26 @@
             <section class="tab-content" id="hoursTab">
                 <!-- משימות -->
                 <div class="card">
-                    <h2>משימות</h2>
+                    <div class="filter-bar">
+                        <div class="filter-bar-left">
+                            <h2 style="margin:0;">משימות</h2>
+                        </div>
+                        <div class="filter-bar-right" style="gap: 5px; display: flex;">
+                            <button class="btn btn-icon-only btn-frameless"
+                                onclick="window.app && window.app.exportAllTasksExcel()" title="ייצוא לאקסל">
+                                <img src="icons/excel.png" alt="Excel">
+                            </button>
+                            <button class="btn btn-icon-only btn-frameless"
+                                onclick="window.app && window.app.exportAllTasksPDF()" title="ייצוא ל-PDF">
+                                <img src="icons/pdf.png" alt="PDF">
+                            </button>
+                            <button class="btn btn-icon-only btn-frameless"
+                                onclick="window.app && window.app.exportAllTasksHTML()" title="ייצוא למייל (HTML)">
+                                <img src="icons/html.png" alt="HTML">
+                            </button>
+                        </div>
+                    </div>
+
                     <div id="tasksCardsContainer" class="tasks-cards-grid">
                         <div class="empty-message" style="padding: 60px;">
                             <div>טען קובץ שעות להצגת משימות</div>
@@ -186,29 +217,41 @@
 
             <!-- Tab: Requirements -->
             <section class="tab-content" id="requirementsTab">
+                <!-- New Requirements KPIs -->
+                <div id="requirementsKpiContainer" class="summary-section"></div>
+
                 <div class="card">
                     <!-- סרגל סינון לפי סטטוס -->
                     <div class="filter-bar" id="statusFilterBar">
                         <div class="filter-bar-left">
                             <span class="filter-label">סינון:</span>
-                            <button class="filter-btn btn btn-sm active" data-status="all">הכל (<span id="filterCountAll">0</span>)</button>
-                            <button class="filter-btn btn btn-sm" data-status="Active">Active (<span id="filterCountActive">0</span>)</button>
-                            <button class="filter-btn btn btn-sm" data-status="Backlog">Backlog (<span id="filterCountBacklog">0</span>)</button>
-                            <button class="filter-btn btn btn-sm" data-status="Done">Done (<span id="filterCountDone">0</span>)</button>
-                            <button class="filter-btn btn btn-sm btn-danger" data-status="overbudget">חריגה (<span id="filterCountOverbudget">0</span>)</button>
+                            <button class="filter-btn btn btn-sm active" data-status="all">הכל (<span
+                                    id="filterCountAll">0</span>)</button>
+                            <button class="filter-btn btn btn-sm" data-status="Active">Active (<span
+                                    id="filterCountActive">0</span>)</button>
+                            <button class="filter-btn btn btn-sm" data-status="Backlog">Backlog (<span
+                                    id="filterCountBacklog">0</span>)</button>
+                            <button class="filter-btn btn btn-sm" data-status="Done">Done (<span
+                                    id="filterCountDone">0</span>)</button>
+                            <button class="filter-btn btn btn-sm btn-danger" data-status="overbudget">חריגה (<span
+                                    id="filterCountOverbudget">0</span>)</button>
                         </div>
-                        <div class="filter-bar-right">
-                            <button class="btn btn-export" onclick="window.app && window.app.exportRequirementsExcel()">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                                אקסל
+                        <div class="filter-bar-right" style="gap: 5px; display: flex;">
+                            <button class="btn btn-icon-only btn-frameless"
+                                onclick="window.app && window.app.exportRequirementsExcel()" title="ייצוא לאקסל">
+                                <img src="icons/excel.png" alt="Excel">
                             </button>
-                            <button class="btn btn-export" onclick="window.app && window.app.exportRequirementsPDF()">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                                PDF
+                            <button class="btn btn-icon-only btn-frameless"
+                                onclick="window.app && window.app.exportRequirementsPDF()" title="ייצוא ל-PDF">
+                                <img src="icons/pdf.png" alt="PDF">
+                            </button>
+                            <button class="btn btn-icon-only btn-frameless"
+                                onclick="window.app && window.app.exportRequirementsHTML()" title="ייצוא למייל (HTML)">
+                                <img src="icons/html.png" alt="HTML">
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="table-container">
                         <table class="data-table" id="requirementsTable">
                             <thead>
@@ -287,11 +330,11 @@
 
     <!-- Scripts -->
     <script src="xlsx.full.min.js"></script>
-    <script src="chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <script type="module" src="js/main.js"></script>
-</body>
-</html>
 
+    <script src="js/vendor/html2canvas.min.js"></script>
+    <script src="js/vendor/jspdf.umd.min.js"></script>
+    <script src="js/vendor/jspdf.plugin.autotable.min.js"></script>
+    <script type="module" src="js/main.js?v=3"></script>
+</body>
+
+</html>
